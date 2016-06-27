@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Viewpoint Changer</title>
+    <link rel="stylesheet/less" href="css/style.less">
+    <script>
+        var less = {
+                env: 'development'
+        };
+
+        function configEvent(v_sign)
+        {
+            Datacenter.hideColorPicker(v_sign);
+        }
+
+        function changeColor(color)
+        {
+            Datacenter.changeColor('#' + color);
+        }
+
+        function titleEvent(v_sign)
+        {
+            Datacenter.hideTitlePicker(v_sign);
+        }
+    </script>
+    <script src="bower_components/less/dist/less.min.js"></script>
+    <script data-main="js/main" src="bower_components/requirejs/require.js"></script>
+</head>
+<body >
+    <nav id="Navbar" class="navbar navbar-inverse navbar-static" role="navigation">
+<!--         <div class="navbar-header">
+            <a class="navbar-brand" href="#">Viewpoint Changer</a>
+        </div> -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-1" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Viewpoint Changer
+            </a>
+        </div>
+        <div class="collapse navbar-collapse navbar-left" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+<!--                 <li class="dropdown" id="LightControl">
+                    <a href="#" role="button" aria-haspopup="true" aria-expanded="false"><i class="iconfont" id="lightControlOn" style="display:inline">&#xe64b;</i><i class="iconfont" id="lightControlOff" style="display:none">&#xe623;</i><span id="text">Lights Off</span> </a>
+                </li> -->
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-folder-open"></span>&nbsp;Data <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li id="Iris" class="dataLoader"><a> Iris Data</a></li>
+                        <li id="Car" class="dataLoader"><a> Car Data</a></li>
+                        <li id="Serum" class="dataLoader"><a> Serum Data</a></li>
+                        <li id="Food" class="dataLoader"><a> Food Data</a></li>
+                        <li id="Wine" class="dataLoader"><a> Wine Data</a></li>
+                        <li id="3DBall" class="dataLoader"><a> 3D Sphere</a></li>
+                        <li id="Synthetic" class="dataLoader"><a> 12D Synthetic</a></li>
+                        <li id="Abalone" class="dataLoader"><a> Abalone Data</a></li>
+                        <!-- <li id="2DPlanes" class="dataLoader"><a> Orthogonal  Planes</a></li>
+                        <li id="Swissroll" class="dataLoader"><a> Swissroll</a></li> -->
+                    </ul>
+                </li>
+                <li class="dropdown" id="HelpDocument">
+                    <a href="#" role="button" aria-haspopup="true" aria-expanded="false"><i class="iconfont" style="font-size: 15px">&#xe606;</i><span id="text">&nbsp;Help</span> </a>
+                </li>
+                <!-- <li class="dropdown" id="LanternControl">
+                    <a href="#" role="button" aria-haspopup="true" aria-expanded="false"><i class="iconfont" id="lanternControlOn" style="display:inline">&#xe764;</i><i class="iconfont" id="lanternControlOff" style="display:none">&#xe6dc;</i><span id="text">Show Lantern</span> </a>
+                </li> -->
+                <!-- <li class="dropdown" id="VectorControl">
+                    <a href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-eye-open" id="vectorControlIcon"></span> <span id="text">Show Vectors</span> </a>
+                </li> -->
+                <!-- <li class="dropdown myCheckbox" id="FocusControl">
+                    <a aria-haspopup="true" aria-expanded="false" id="FocusControlPoint" class="selected">
+                    <i class="iconfont">&#xe604;&nbsp;</i><span id="text">Point</span></a>
+                    <input class="tgl tgl-flat" id="FocusCheckbox" type="checkbox"><label class="tgl-btn" for="FocusCheckbox"></label>
+                    <a aria-haspopup="true" aria-expanded="false" id="FocusControlGroup">
+                    <i class="iconfont">&#xe603;&nbsp;</i><span id="text">Group</span></a>
+                </li> -->
+                <!-- <li class="dropdown myCheckbox" id="OptimizationControl">
+                    <a aria-haspopup="true" aria-expanded="false" id="OptimizationControlExpand" class="selected">
+                    <i class="iconfont">&#xe602;&nbsp;</i><span id="text">Expand</span></a>
+                    <input class="tgl tgl-flat" id="OptiCheckbox" type="checkbox"><label class="tgl-btn" for="OptiCheckbox"></label>
+                    <a aria-haspopup="true" aria-expanded="false" id="OptimizationControlCompress">
+                    <i class="iconfont">&#xe601;&nbsp;</i><span id="text">Compress</span></a>
+                </li> -->
+                <!-- <li id="AxesControl"><a><span>Show Axes</span>&nbsp;<input type="checkbox" id="AxesCheckbox" checked="true"><label for="AxesCheckbox"></label></a></li>
+                <li class="dropdown myCheckbox" id = "hiddenIcon">
+                    <i class="iconfont" id = "Trash">&#xe600;</i>
+                </li> -->
+            </ul>
+        </div>
+    </nav>
+
+    <div id = "rootApp"class="container">
+    </div>
+    <div id="titlePickerDiv" style = "position:absolute;z-index: 1;display:none;">
+        <span>Name: </span><input id="titlePicker" style = 'width:100px'>
+        <button id = 'titleConfig' onclick="titleEvent(true)" class="btn btn-default btn-sm">OK</button>
+        <button id = 'titleConfig' onclick="titleEvent(false)" class="btn btn-default btn-sm">Cancel</button>
+    </div>
+  <div id = 'colorPickerDiv' style = "position:absolute;z-index: 3;display:none;">
+    <input id = 'colorPicker' class="jscolor" onchange="changeColor(this.jscolor)" style = 'width:100px'>
+    <button id = 'colorConfig' onclick="configEvent(true)">OK</button>
+    <button id = 'colorConfig' onclick="configEvent(false)">Cancel</button>
+  </div>
+  <div id="colorPickerContainer" style = "z-index: 2;" class="hidden"></div>
+    <!--
+    <div id="root-app" style = "position:absolute; height: 100%; width :100%" ></div>
+-->
+    <script id = "colorScript" src="bower_components/jscolor/jscolor.js" crossorigin="anonymous"></script>
+</body>
+</html>

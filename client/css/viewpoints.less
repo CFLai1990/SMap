@@ -1,0 +1,423 @@
+#ViewcollectionViewNav{
+	width: 100%;
+	height: 100%;
+	//border: @vpViewBorder;
+	//border-radius: @border-radius;
+	background: none;
+	//line-height: @vpViewNavInline;
+	overflow:visible;
+	//padding-left: @vpViewNavPadding;
+}
+
+#ViewcollectionViewNav>div{
+	float: left;
+	text-align: center;
+	border-top: @vpViewBorder;
+}
+
+#ViewcollectionViewNav>div:hover{
+	border-top: @vpViewBorderHovered;
+	-webkit-transition: @vpTransition;
+	transition: @vpTransition;
+}
+
+#ViewcollectionViewNav>div.tooltip{
+	border-top: none;
+}
+
+#ViewcollectionViewNav>div.tooltip:hover{
+	border-top: none;
+}
+
+#ViewcollectionViewNav .checkboxDiv{
+	height: @vpViewTopHeight;
+	line-height: @vpViewTopHeight;
+	border-top: none;
+}
+
+#ViewcollectionViewNav .checkboxDiv:hover{
+	border-top: none;
+}
+
+#ViewcollectionViewSVG{
+	position: relative;
+	width: 100%;
+	height: 100%;
+	border: @vpViewBorder;
+	background: @allViewsBackground;
+}
+
+@-webkit-keyframes thicker{
+	from {stroke-width: @vpViewStrokeNone;}
+	to {stroke-width: @vpViewStrokeThick;}
+}
+
+@-webkit-keyframes thinner{
+	from {stroke-width: @vpViewStrokeThick;}
+	to {stroke-width: @vpViewStrokeNone;}
+}
+
+@-webkit-keyframes context{
+	from {opacity: @vpViewFocus;}
+	to {opacity: @vpViewContext;}
+}
+
+@-webkit-keyframes focus{
+	from {opacity: @vpViewContext;}
+	to {opacity: @vpViewFocus;}
+}
+
+@-webkit-keyframes deepen{
+	from {fill: @vpViewFillLight;}
+	to {fill: @vpViewFillDeep;}
+}
+
+@-webkit-keyframes lighter{
+	from {fill: @vpViewFillDeep;}
+	to {fill: @vpViewFillLight;}
+}
+
+.ViewpointView{
+}
+
+.viewpointBackground{
+	//fill: @vpViewBackground;
+	stroke: none;
+}
+
+.vpProjectionPoint circle{
+	//fill: @vpViewFill;
+	stroke: @vpViewStroke;
+	stroke-width: @vpViewStrokeNone;
+	cursor: pointer;
+	-webkit-animation: thinner @vpViewDuration;
+}
+
+.vpProjectionPoint:hover circle{
+	stroke-width: @vpViewStrokeThick;
+	-webkit-animation: thicker @vpViewDuration;
+}
+
+.vpProjectionPoint{
+	opacity: @vpViewFocus;
+	-webkit-transition: @vpTransition;
+	transition: @vpTransition;
+}
+
+.vpProjectionPoint.vpPointContext{
+	//opacity: @vpViewContext;
+	//-webkit-animation: context @vpViewDuration;
+}
+
+.vpProjectionPoint.context{
+	opacity: @vpViewHidden @vpImportant;
+	-webkit-transition: @vpTransition;
+	transition: @vpTransition;
+}
+
+.vpProjectionPoint.groupMember.context{
+	opacity: @vpViewFocus @vpImportant;
+	-webkit-transition: @vpTransition;
+	transition: @vpTransition;
+}
+
+.vpProjectionPoint.groupCenter circle{
+	stroke: @vpViewStroke;
+	stroke-width: @vpViewStrokeThick;
+	-webkit-animation: none;
+}
+
+.vpProjectionPoint.groupCenter:hover circle{
+	stroke: @vpViewStroke;
+	stroke-width: @vpViewStrokeThick;
+	-webkit-animation: none;
+}
+
+.vpProjectionPoint.groupMember circle{
+	stroke: @vpViewStroke;
+	stroke-width: @vpViewStrokeThick;
+	-webkit-animation: none;
+}
+
+.vpProjectionPoint.groupMember:hover circle{
+	stroke: @vpViewStroke;
+	stroke-width: @vpViewStrokeThick;
+	-webkit-animation: none;
+}
+
+.vpProjectionPoint.groupFocus circle{
+	fill: @vpViewFillDeep;
+	stroke: none;
+	-webkit-animation: deepen @vpViewDuration;
+}
+
+.vpProjectionPoint.groupMember.groupFocus circle{
+	fill: @vpViewFillDeep;
+	-webkit-animation: deepen @vpViewDuration;
+}
+
+.vpProjectionPoint.groupContext circle{
+	fill: @vpViewFillLight;
+	stroke: none;
+	-webkit-animation: lighter @vpViewDuration;
+}
+
+.vpProjectionAxis line{
+	stroke: @vpViewFillMedian;
+	stroke-width: @vpViewStrokeThick;
+}
+
+.vpProjectionAxis text{
+	cursor: default;
+}
+
+#brushPath{
+	stroke: @vpViewStroke;
+	stroke-width: @vpViewStrokeThick;
+	fill: none;
+}
+
+.ViewpointPlus{
+	cursor: pointer;
+}
+.ViewpointPlus rect{
+	fill: @vpViewMedian;
+	stroke: none;
+	transition:fill @vpViewTrans;
+	-moz-transition:fill @vpViewTrans; /* Firefox 4 */
+	-webkit-transition:fill @vpViewTrans; /* Safari and Chrome */
+	-o-transition:fill @vpViewTrans; /* Opera */
+}
+.ViewpointPlus:hover rect{
+	fill: @vpViewDeep;
+}
+ .ViewpointPlus circle{
+	stroke: @vpViewMedian;
+	stroke-width: @vpViewStrokeThick;
+	fill: none;
+	transition:stroke @vpViewTrans;
+	-moz-transition:stroke @vpViewTrans; /* Firefox 4 */
+	-webkit-transition:stroke @vpViewTrans; /* Safari and Chrome */
+	-o-transition:stroke @vpViewTrans; /* Opera */
+ }
+  .ViewpointPlus:hover circle{
+	stroke: @vpViewDeep;
+}
+
+#ViewcollectionViewNav button{
+	//border: @vpViewBorder;
+	border: 0px;
+	border-bottom: @vpViewBorderNone;
+	//border-top: @vpViewBorderNone;
+	//border-radius: @vpViewBorderRadius;
+	background: @allViewsBackground;
+	color: @vpViewFillDeep;
+	font-weight: bold;
+	-webkit-transition: @vpTransition;
+	transition: @vpTransition;
+}
+
+#ViewcollectionViewNav button:hover{
+	background: @vpViewFillLight;
+	color: @vpViewFillDeep;
+	border-bottom: @vpViewBorderNone;
+	//border-top: @vpViewBorderNone;
+	-webkit-transition: @vpTransition;
+	transition: @vpTransition;
+}
+
+#ViewcollectionViewNav button.selected{
+	background: @allViewsBackground;
+	color: @vpViewFillDeep;
+	border-bottom: @vpViewBorder;
+	//border-top: @vpViewBorder;
+	//border-radius: @vpViewBorderRadius;
+}
+
+#ViewcollectionViewNav button.selected:hover{
+	background: @vpViewFillLight;
+	color: @vpViewFillDeep;
+	border-bottom: @vpViewBorderHovered;
+	//border-top: @vpViewBorderHovered;
+}
+
+#ViewcollectionViewNav a{
+  	-webkit-transition: @vpTransition;
+  	transition: @vpTransition;
+}
+
+#ViewcollectionViewNav span{
+	cursor: default;
+}
+
+#ViewcollectionViewNav button span{
+	cursor: pointer;
+}
+
+#ViewcollectionViewNav span.MyControl{
+	cursor: pointer;
+}
+
+#ViewcollectionViewNav .tooltip{
+	display: inline-block;
+}
+
+#ViewcollectionViewNav .AddBtn{
+	background: @allViewsBackground;
+	color: @vpViewFillLight;
+	border: @vpViewBorderThin;
+	border-radius: @vpViewBorderCircleRadius;
+}
+
+#ViewcollectionViewNav .AddBtn span{
+	cursor: pointer;
+	top: 2.5px;
+	left: .5px;
+}
+
+#ViewcollectionViewNav .AddBtn:hover{
+	background: @allViewsBackground;
+	color: @vpViewFillDeep;
+	border-color: @vpViewFillDeep;
+}
+
+#ViewcollectionViewNav button:focus{
+	outline: none;
+}
+
+#ViewcollectionViewNav button.disabled{
+	color: @vpViewFillLight;
+}
+
+.vpInfoContainer{
+	position: absolute;
+	padding: 3px 10px;
+	top: 10px;
+	left: 10px;
+}
+
+.vpInfoPanel{
+	position: absolute;
+	width: @vpPanelWidth;
+	height: @vpPanelHeight;
+	padding: 5px 10px;
+	top: 10px;
+	left: 28px;
+	background: @allViewsBackgroundMedian;
+	color: @vpViewFillDeep;
+	border-radius: @vpViewBorderRadius;
+	opacity: 0.8;
+	overflow: visible;
+}
+
+.vpInfoPanel:hover{
+	opacity: @vpViewFocus;
+	-webkit-transition: @vpTransition;
+	transition: @vpTransition;
+}
+
+.vpInfoPanel .bold{
+	font-weight: bold;
+	font-variant: small-caps;
+}
+
+.vpInfoPanel *{
+	cursor: default;
+}
+
+.vpInfoContainer #vpInfoBtn{
+	z-index: 999;
+	position: relative;
+	top: -3px;
+	left: -10px;
+	outline: none;
+	background: @allViewsBackground;
+	border: @vpViewBorderThin;
+	border-radius: @vpViewBorderCircleRadius;
+}
+
+.vpInfoContainer #vpInfoBtn:hover{
+	background: @vpViewBackground;
+}
+
+.vpInfoPanel .dimBar{
+	fill: @vpViewFillMedian;
+  	-webkit-transition: @vpTransition;
+  	transition: @vpTransition;
+}
+
+.vpInfoPanel .dimBar:hover rect{
+	cursor: pointer;
+	fill: @vpViewFillDeep;
+}
+
+.vpInfoPanel svg{
+	left: 2px;
+	border: none;
+}
+
+.vpInfoPanel .dimBar text{
+	cursor: pointer;
+	font-size: 12px;
+	fill: @vpViewStroke;
+}
+
+.vpInfoPanel .dimBar:hover text{
+	font-size: 12px;
+	fill: @vpViewFillDeep;
+}
+
+.vpInfoPanel .dimBar .longText{
+	display: none;
+}
+
+.vpInfoPanel .dimBar:hover .longText{
+	display: block;
+}
+
+.vpInfoPanel .dimBar:hover .shortText{
+	display: none;
+}
+
+.vpInfoPanel .extent{
+	fill: @vpViewFillDeep;
+	fill-opacity: @vpViewFaint;
+	stroke: @vpViewFillDeep;
+	stroke-width: @vpViewStrokeNormal;
+	stroke-opacity: @vpViewContext;
+	shape-rendering: crispEdges;
+	visibility: hidden;
+	display: none;
+}
+
+.vpInfoPanel .extent.shown{
+	visibility: visible;
+	display: block;
+}
+
+.vpInfoPanel .resize rect{
+	cursor: ew-resize @vpImportant;
+	display: none;
+}
+
+.vpInfoPanel .resize.shown rect{
+	display: block;
+}
+
+.tooltip-inner{
+	text-align: left @vpImportant;
+}
+
+.suggestionPath{
+	stroke: @vpViewStroke;
+	stroke-width: @vpViewStrokeThick;
+	fill: @vpViewFillLight;
+	cursor: pointer;
+	-webkit-transition: @vpTransition;
+	transition: @vpTransition;
+	//opacity: @vpViewContext;
+}
+
+.suggestionPath:hover{
+	fill: @vpViewFillMedian;
+}

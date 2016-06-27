@@ -1,0 +1,57 @@
+#ViewmapViewSVG{
+	position: relative;
+	width: 100%;
+	height: 100%;
+	border: @vmViewBorder;
+	background: @allViewsBackground;
+}
+
+.viewmapBackground rect{
+	//fill: @vmViewBackground;
+}
+
+.vpError circle{
+	//fill: @vmViewFill;
+}
+
+.vpMapPoint{
+	opacity: 0.5;
+	cursor: pointer;
+	-webkit-transition: @vpTransition;
+	transition: @vpTransition;
+}
+
+.vpMapPoint .outer{
+	fill: none;
+	stroke-width: @vmViewStrokeThick
+}
+
+.vpMapPoint .inner{
+	stroke: none;
+}
+
+.vpMapPoint text{
+	font-size: 12px;
+	stroke-width: 0px;
+}
+
+.vpMapPoint.shown .title{
+	stroke-width: 1.5px;
+}
+
+.vpMapPoint.hovered{
+	opacity: 1.0;
+}
+
+.vpMapPoint.pointHidden{
+	opacity: 0.2;
+}
+
+.vpMapPoint text.trash{
+	font-size: 15px;
+	opacity: 0.0;
+}
+
+.vpMapPoint.hovered:hover .trash{
+	opacity: 1.0;
+}
