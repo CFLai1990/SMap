@@ -59,13 +59,6 @@ define([
             Config.get("data").data = this.data;
             this.dataArray = MDS.normalizeData(t_array);
             this.distArray = MDS.getSquareDistances(this.dataArray);
-            var t_sub = [];
-            this.dimensions.forEach(function(d){
-                t_sub.push(true);
-            });
-            Config.set("subspace", t_sub);
-            Config.set("subspaceAll", t_sub);
-            // this.clusters = this.clustering(this.dataArray);
             this.trigger("Data__DataReady");
         },
 

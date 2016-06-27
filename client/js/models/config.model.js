@@ -30,6 +30,8 @@ define([
             'dataPath': 'data/Car.csv',//Iris.csv, Car.csv, 3DBall.csv, 2DPlanes.csv, swissroll.csv
             'currentData': 'Car',
             'distType': "Weighting",//"Weighting", "KNN", "ErrorReducing"
+            'sampleCount': 100,
+            'dimRange': [2, Infinity],
             'cluster': null,
             'clusterNumber': null,
             'clusterColors': null,
@@ -46,9 +48,6 @@ define([
             'showAxis': true,
             'focusType': 'Group',
             'groupOn': true,
-            'optimizationTypes': ['Expand', 'Compress', 'Separate'],
-            'optimization': 'Expand',
-            'changeOptimization': false,
             'useCentroid': true,
             'fontSize': 12,
             'fontSizeLarge': 15,
@@ -66,15 +65,15 @@ define([
                 globalWidth: null,
                 globalTop: null,
                 globalMargin: null,
-                leftWidthRatio: 0.48,
+                leftWidthRatio: 0.49,
                 rightWidthRatio: 0.49,
-                marginRatio: 0.01,
-                leftTopHeight: 70,
-                leftBtmHeightRatio: 0.88,
-                leftMidHeightRatio: 0.02,
-                rightTopHeightRatio: 0.18,
-                rightBtmHeightRatio: 0.78,
-                rightMidHeightRatio: 0.02,
+                marginRatio: 0.006,
+                leftTopHeightRatio: 0.98,
+                leftBtmHeightRatio: 0.00,
+                leftMidHeightRatio: 0.00,
+                rightTopHeightRatio: 0.98,
+                rightBtmHeightRatio: 0.00,
+                rightMidHeightRatio: 0.00,
                 marginBottomRatio: 0.02,
                 left:{
                 },
@@ -83,29 +82,11 @@ define([
                 rightTop:{
                 },
             },
-            'viewpointsnavLayout': {
+            'childviewLayout': {
                 width: null,
                 height: null,
                 topRatio: 0.00,
                 marginRatio: 0.00,
-            },
-            'viewpointsLayout': {
-                width: null,
-                height: null,
-                topRatio: 0.00,
-                marginRatio: 0.00,
-            },
-            'viewmapLayout': {
-                width: null,
-                height: null,
-                topRatio: 0.00,
-                marginRatio: 0.00,
-            },
-            'viewfocusLayout': {
-                width: null,
-                height: null,
-                topRatio: 0.02,
-                marginRatio: 0.02,
             },
             'data': {
                 data: null,

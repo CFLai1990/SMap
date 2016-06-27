@@ -29,6 +29,7 @@ require.config({
         'Switch': 'libs/bootstrapSwitch',
         'tooltip': 'libs/tooltip',
         'MDS': 'libs/mds',
+        'basicFunctions': 'lib/basicFunctions',
         'backbone.routefilter': '../bower_components/backbone.routefilter/dist/backbone.routefilter.min',
         // templates path
         'templates': '../templates',
@@ -39,25 +40,19 @@ require.config({
         'datacenter': 'models/datacenter.model',
         'config': 'models/config.model',
         'variables': 'models/variables.model',
-        'viewpoint': 'models/viewpoint.model',
-        'viewmap': 'models/viewmap.model',
         'data': 'models/data.model',
+        'SubMap_Model': 'models/submap.model',
+        'Projection_Model': 'models/projection.model',
         //collections
-        'viewpointcollection': 'collections/viewpoint.collection',
-        'viewmapcollection': 'collections/viewmap.collection',
+        'SubMap_Collection': 'collections/submap_Collection',
+        'Projection_Collection': 'collections/projection_Collection',
         //views
         'Base': 'views/base.view',
         'AppView': 'views/app.view',
-        'ViewpointView': 'views/viewpoint.view',
-        'ViewpointCollectionView': 'views/viewpointcollection.view',
-        'ViewpointLayoutView': 'views/viewpointlayout.view',
-        'ViewpointNavLayoutView': 'views/viewpointnavlayout.view',
-        'ViewfocusView': 'views/viewfocus.view',
-        'ViewfocusCollectionView': 'views/viewfocuscollection.view',
-        'ViewfocusLayoutView': 'views/viewfocuslayout.view',
-        'ViewmapView': 'views/viewmap.view',
-        'ViewmapCollectionView': 'views/viewmapcollection.view',
-        'ViewmapLayoutView': 'views/viewmaplayout.view',
+        'SubMap_LayoutView': 'views/submap_Layout.view',
+        'SubMap_CollectionView': 'views/submap_Collection.view',
+        'Projection_LayoutView': 'views/projection_Layout.view',
+        'Projection_CollectionView': 'views/projection_Collection.view',
     }
 });
 
