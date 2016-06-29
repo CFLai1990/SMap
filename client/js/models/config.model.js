@@ -27,11 +27,12 @@ define([
                 "Synthetic": "data/synthetic.csv",
                 "Abalone": "data/abalone.csv",
             },
-            'dataPath': 'data/Car.csv',//Iris.csv, Car.csv, 3DBall.csv, 2DPlanes.csv, swissroll.csv
-            'currentData': 'Car',
-            'distType': "Weighting",//"Weighting", "KNN", "ErrorReducing"
+            'dataPath': 'data/Iris.csv',//Iris.csv, Car.csv, 3DBall.csv, 2DPlanes.csv, swissroll.csv
+            'currentData': 'Iris',
+            'distType': "KNN",//"KNN", "Matrix"
             'sampleCount': 100,
             'dimRange': [2, Infinity],
+            'KNN_K': 5,
             'cluster': null,
             'clusterNumber': null,
             'clusterColors': null,
@@ -95,6 +96,7 @@ define([
                 array: null,
                 vectors: null,
                 coordinates: null,
+                maxVector: null,
             },
             'color': {
                 light: "#000",

@@ -5,8 +5,10 @@ require.config({
             deps: ['jquery','underscore'],
         },
           'MDS': ['numeric'],
+          'basicFunctions': ['numeric', 'MDS'],
           'data': ['MDS'],
           'datacenter': ['MDS'],
+          'SubMap_Model': ['basicFunctions'],
           'Switch': ['jquery', 'bootstrap'],
           'AppView': ['Switch'],
           'tooltip': ['jquery', 'bootstrap'],
@@ -29,7 +31,7 @@ require.config({
         'Switch': 'libs/bootstrapSwitch',
         'tooltip': 'libs/tooltip',
         'MDS': 'libs/mds',
-        'basicFunctions': 'lib/basicFunctions',
+        'basicFunctions': 'libs/basicFunctions',
         'backbone.routefilter': '../bower_components/backbone.routefilter/dist/backbone.routefilter.min',
         // templates path
         'templates': '../templates',
@@ -51,6 +53,7 @@ require.config({
         'AppView': 'views/app.view',
         'SubMap_LayoutView': 'views/submap_Layout.view',
         'SubMap_CollectionView': 'views/submap_Collection.view',
+        'SubMap_ModelView': 'views/submap_Model.view',
         'Projection_LayoutView': 'views/projection_Layout.view',
         'Projection_CollectionView': 'views/projection_Collection.view',
     }

@@ -1,7 +1,3 @@
-/**
- * Created by Chufan Lai at 2015/12/14
- * model for a dataset
- */
 define([
     'require',
     'marionette',
@@ -12,6 +8,11 @@ define([
     'densityClustering',
 ], function(require, Mn, _, $, Config, Backbone, DensityClustering) {
     'use strict';
+
+    var dot=numeric.dot, trans=numeric.transpose, sub=numeric.sub, div=numeric.div, clone=numeric.clone, getBlock=numeric.getBlock,
+        add=numeric.add, mul=numeric.mul, svd=numeric.svd, norm2=numeric.norm2, identity=numeric.identity, dim=numeric.dim,
+        getDiag=numeric.getDiag, inv=numeric.inv, det = numeric.det, norm2Squared = numeric.norm2Squared, norm1 = numeric.norm1;
+
     var data =  Backbone.Model.extend({
         defaults: {
             data: null,
@@ -57,8 +58,15 @@ define([
                 t_array.push(_.toArray(d));
             });
             Config.get("data").data = this.data;
-            this.dataArray = MDS.normalizeData(t_array);
-            this.distArray = MDS.getSquareDistances(this.dataArray);
+            var tt_array = this.dataArray = MDS.normalizeData(t_array), t_max = 0;
+            this.distArray = MDS.getSquareDistances(tt_array);
+            for(var i in tt_array){
+                var t_l = norm2(tt_array[i]);
+                if(t_l > t_max){
+                    t_max = t_l;
+                }
+            }
+            Config.get("data").maxVector = t_max;
             this.trigger("Data__DataReady");
         },
 

@@ -57,7 +57,7 @@
 		return normalize(dot(trans(r.v),sq(e)));
 	}
 
-	function mdsByData(s){
+	function mdsByDataOld(s){
 		var d=dim(s);
 		var data=normalizeData(s)
 
@@ -76,6 +76,11 @@
 		}
 
 		return mdsByDistance(dist);
+	}
+
+	function mdsByData(s){
+		var t_cords = getCoordinates(s, true);
+		return dot(s, t_cords);
 	}
 
 

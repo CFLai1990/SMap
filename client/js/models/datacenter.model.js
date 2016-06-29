@@ -41,6 +41,7 @@
 
             bindAll: function(){
                 this.listenTo(this.data, "Data__DataReady", this.updateData);
+                this.listenTo(this.SubMap_Collection, "Transmission", this.transmitInfo);
             },
 
             start: function(){
@@ -69,6 +70,11 @@
                     dimRange: Config.get("dimRange"),
                     sampleCount: Config.get("sampleCount"),
                 });
-        },
+            },
+
+            transmitInfo: function(v_info){
+                var self = this;
+                self.trigger(v_info.message, v_info.data);
+            },
     }))();
 });

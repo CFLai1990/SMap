@@ -45,7 +45,7 @@ define([
                          height: this.height,
                       };
                       _.extend(Config.get("childviewLayout"), t_layout);
-            self.showChildView('Projection_CollectionView', new Projection_CollectionView({}));
+            self.showChildView('Projection_CollectionView', new Projection_CollectionView({collection: Datacenter.Projection_Collection}));
         },
 
     }, Base));
