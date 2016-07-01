@@ -40,6 +40,7 @@ define([
             _.extend(this, options);
             _.extend(this, t_default);
             this.bindAll();
+            this.bindInteractions();
         },
 
         showChildViews: function(){
@@ -70,6 +71,12 @@ define([
 
         bindInteractions: function(){
             var self = this;
+            d3.selectAll(".dataLoader")
+            .on("click",function(){
+                var t_id = d3.select(this).attr("id"), t_path = Config.get("dataLibrary")[t_id];
+                Config.set("currentData", t_id);
+                Datacenter.loadData(t_path);
+            });
         },
 
         getLayoutParameters: function(){

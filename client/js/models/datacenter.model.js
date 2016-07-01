@@ -65,6 +65,7 @@
                 var t_cord;
                 Config.get("data").array = this.data.dataArray;
                 Config.get("data").distances = MDS.getSquareDistances(this.data.dataArray);
+                this.Projection_Collection.update();
                 this.SubMap_Collection.update({
                     dimensions: this.data.dimensions.values(),
                     dimRange: Config.get("dimRange"),

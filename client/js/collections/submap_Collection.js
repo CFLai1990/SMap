@@ -140,12 +140,15 @@ define([
         clearAll: function(){
             this.reset();
             var t_defaults = {
-                count: 0,
-                sampleCount: null,
                 dimensions: null,
                 dimCount: null,
                 dimRange: null,
                 subIndex: null,
+                sampleCount: null,
+                sampleFinishCount: null,
+                dist: null,
+                projection: null,
+                timer: null,
             };
             _.extend(this, t_defaults);
             this.trigger("SubMapCollection__ClearAll");

@@ -62,5 +62,16 @@
             scale: function(v_scales, v_data){
                 return [v_scales.x(v_data[0]), v_scales.y(v_data[1])];
             },
+
+            optimizeData: function(v_data){
+                for(var i in v_data){
+                    for(var j in v_data[i]){
+                        var t = v_data[i][j];
+                        if(Math.abs(t) < 1e-10){
+                            v_data[i][j] =0;
+                        }
+                    }
+                }
+            },
 	};
 })();
