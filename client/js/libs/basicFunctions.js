@@ -63,6 +63,18 @@
                 return [v_scales.x(v_data[0]), v_scales.y(v_data[1])];
             },
 
+            trimArray: function(v_arr, v_prec){
+                var t_arr = [];
+                for(var i in v_arr){
+                    var tt_arr = [];
+                    for(var j in v_arr[i]){
+                        tt_arr[j] = parseFloat(v_arr[i][j].toFixed(v_prec));
+                    }
+                    t_arr[i] = tt_arr;
+                }
+                return t_arr;
+            },
+
             optimizeData: function(v_data){
                 for(var i in v_data){
                     for(var j in v_data[i]){

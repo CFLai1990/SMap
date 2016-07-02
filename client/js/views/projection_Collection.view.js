@@ -154,7 +154,7 @@ define([
                 });
                 $(t_g[0])
                 .tooltip({
-                    container: "#leftTop",
+                    container: "#rightTop",
                     trigger: "manual",
                 });
                 t_g.append("circle")
@@ -252,14 +252,28 @@ define([
                     .attr("r", function(){
                         return self.parameter.r;
                     });
+                    var tt_cords = self.collection.basis2;
+                    this.d3el.selectAll(".ProjectionAxis text")
+                    .transition()
+                    .ease("linear")
+                    .duration(self.transition.duration)
+                    .style("opacity", function(t_d, t_i){
+                        var t_d = tt_cords[t_i], t = t_d[0]*t_d[0] + t_d[1]*t_d[1];
+                        console.log($(this).text() + " : " + t);
+                        if(t < 0.1){
+                            return 0;
+                        }else{
+                            return 1;
+                        }
+                    });
                 }
             }
         },
 
         clearAll: function(){
-            var self = this;          
+            var self = this;
             self.d3el.selectAll("g")
-            .remove();     
+            .remove();
             var t_defaults = {
                 fontSize: 12,
                 ready: false,

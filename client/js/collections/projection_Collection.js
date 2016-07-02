@@ -12,6 +12,7 @@ define([
     var dot=numeric.dot, trans=numeric.transpose, sub=numeric.sub, div=numeric.div, clone=numeric.clone, getBlock=numeric.getBlock,
         add=numeric.add, mul=numeric.mul, svd=numeric.svd, norm2=numeric.norm2, identity=numeric.identity, dim=numeric.dim,
         getDiag=numeric.getDiag, inv=numeric.inv;
+    var abs = Math.abs, sqrt = Math.sqrt, pow = Math.pow;
 
     var Projection_Collection = Backbone.Collection.extend({
         model: Projection_Model,
@@ -29,6 +30,7 @@ define([
                 timer: null,
                 transCoordinates: null,
                 interval: Config.get("transition").interval,
+                precision: 7,
             };
             _.extend(this, t_defaults);
         },
@@ -37,7 +39,7 @@ define([
             var self = this, t_data = trans(Config.get("data").array), t_array = [];
             if(!self.data){
                 self.data = Config.get("data").array;
-            }            
+            }
             for(var i in v_subspace){
                 if(v_subspace[i]){
                     t_array.push(t_data[i]);
@@ -81,7 +83,6 @@ define([
                 }else{
                     self.nowFrame = 0;
                     clearInterval(self.timer);
-                    var tt_proj = dot(v_data, self.basis2);
                     self.timer = setInterval(function(){
                         self.coordinates = self.transCoordinates[self.nowFrame];
                         self.projection = dot(v_data, self.coordinates);
@@ -99,7 +100,18 @@ define([
         getTransform: function(){
             var self = this; self.transCoordinates = [];
             var B=[], inds=[], angles=[], is=[], t_different=false, same_inds=[], same_angles=[];
-            var t = svd(dot(trans(self.basis1), self.basis2));
+            var t = dot(trans(self.basis1), self.basis2);
+            if(abs(abs(t[0][0]) - abs(t[0][1]))<1e-10) t[0][1] = t[0][0] * (t[0][1] * t[0][0] > 0?1:-1);
+            if(abs(abs(t[1][0]) - abs(t[1][1]))<1e-10) t[1][1] = t[1][0] * (t[0][1] * t[0][0] > 0?1:-1);//Necessary to avoid NaN in SVD
+            // if(abs(abs(t[1][0]) - abs(t[0][0]))<1e-10) {
+            //     var t_sign = t[1][0] * t[0][0] > 0?1:-1, t_num = sqrt(1 - pow(t[1][0], 2));
+            //     t[1][0] = t[0][0] * t_sign;
+            //     t[1][1] = t_num * (t[1][1] * t_num > 0?1:-1);
+            //     t[0][1] = t_num * (t[0][1] * t_num > 0?1:-1);
+            // }
+            // console.log(clone(t));
+            t = svd(t, self.precision);
+            Config.set("test", {a: clone(self.basis1), b: clone(self.basis2)});
             var G1=trans(dot(self.basis1, t.U)), G2=trans(dot(self.basis2, t.V));
             var rotG2=dot(t.V,trans(t.U));
             if(Math.pow(rotG2[0][0]-rotG2[1][1], 2)>0.000001 ||
