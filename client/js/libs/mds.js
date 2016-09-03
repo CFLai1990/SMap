@@ -37,6 +37,11 @@
 		return {n:[max1.n,max2.n],e:[max1.v,max2.v],v:[rv[max1.n],rv[max2.n]]};
 	}
 
+	function correlationMatrix(s){
+		var t_d = normalizeData(trans(s));
+		return dot(trans(t_d), t_d);
+	}
+
 	function mdsByDistance(s){
 		var d=dim(s);
 		if(d[0]!=d[1] || d[0] <=1){
@@ -257,6 +262,7 @@
 		return t_sub;
 	}//Get the normal space of v_sub
 
+	window["MDS"]["correlationMatrix"]=correlationMatrix;
 	window["MDS"]["getSquareDistances"]=getSquareDistances;
 	window["MDS"]["getCoordinatesByEigen"]=getCoordinatesByEigen;
 	window["MDS"]["getCoordinates"]=getCoordinates;
