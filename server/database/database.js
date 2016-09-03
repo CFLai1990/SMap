@@ -1,8 +1,8 @@
 var MongoClient = require('mongodb').MongoClient
 , assert = require('assert');
 // Connection URL
-// var url = "mongodb://192.168.10.9:27017/SMap";
-var url = "mongodb://127.0.0.1:27017/local";
+var url = "mongodb://192.168.10.9:27017/SignalDataBase";
+// var url = "mongodb://127.0.0.1:27017/local";
 var logger;
 
 function initialize(v_logger){

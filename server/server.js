@@ -6,7 +6,7 @@ var app = express();
 
 function initialize(router){
 	app.use("/", router);
-	var server = http.createServer(app).listen(6666, "0.0.0.0");
+	var server = http.createServer(app).listen(3333, "0.0.0.0");
 	return server;
 }
 

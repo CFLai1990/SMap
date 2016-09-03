@@ -20,7 +20,7 @@ var fileType = {
 	"pdf":"application/pdf",
 };
 
-function initialize(root, db, views, logger){
+function initialize(root, db, logger){
 	var resOpt = {
 		root:  root
 	};
@@ -93,6 +93,22 @@ function initialize(root, db, views, logger){
 					t_table = t_conditions.extra.collection;
 				}
 				db.query(t_table, t_conditions.condition, responseFunc);
+			break;
+			case "queryBC":
+				// db.query(t_conditions.table, t_conditions.condition, views.queryBC(responseFunc, t_conditions.extra));
+				views.queryBC(db.query, db.aggregate, t_conditions, responseFunc);
+			break;
+			case "aggregate":
+				db.aggregate(t_conditions.table, t_conditions.condition, responseFunc);
+			break;
+			case "update":
+				db.update(t_conditions.table, t_conditions.condition, t_conditions.update, responseFunc);
+			break;
+			case "barchart":
+				db.aggregate(t_conditions.table, t_conditions.condition, views.barchart(responseFunc, t_conditions.extra));
+			break;
+			case "pixelmap":
+				db.aggregate(t_conditions.table, t_conditions.condition, views.pixelmap(responseFunc, t_conditions.extra));
 			break;
 		}
 	}
