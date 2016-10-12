@@ -4,6 +4,8 @@ var url = require("url");
 var bodyParser = require('body-parser');
 var router = express.Router();
 var logger;
+var c_require = require("../c_modules/c_loader.js");
+var PandaMat = c_require.load("pandamat");
 
 function useHandle(func, queryFunc){
 	return function(request, response, next){
@@ -26,6 +28,8 @@ function useHandle(func, queryFunc){
 
 function initialize(handle, v_logger){
 	//Get handlers
+	var t = PandaMat.add([[1.2,2.4,2,3]],[[1.2,2.4,2,3]]);
+	console.log(t);
 	logger = v_logger;
 	router.use(useHandle(handle['file'], handle["query"]));
 	for(var t_path in handle){

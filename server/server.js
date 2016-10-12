@@ -4,9 +4,9 @@ var url = require("url");
 var express = require("express");
 var app = express();
 
-function initialize(router){
+function initialize(router, v_port){
 	app.use("/", router);
-	var server = http.createServer(app).listen(3333, "0.0.0.0");
+	var server = http.createServer(app).listen(v_port, "0.0.0.0");
 	return server;
 }
 
