@@ -4,8 +4,9 @@ define([
     'underscore',
     'jquery',
     'backbone',
+    'combinations',
     'SubMap_Model',
-], function(require, Mn, _, $, Backbone, SubMap_Model) {
+], function(require, Mn, _, $, Backbone, Combinations, SubMap_Model) {
     'use strict';
 
     var dot=numeric.dot, trans=numeric.transpose, sub=numeric.sub, div=numeric.div, clone=numeric.clone, getBlock=numeric.getBlock,
@@ -33,39 +34,50 @@ define([
         update: function(v_options) {
             this.clearAll();
             _.extend(this, v_options);
-            this.sampling();
-            this.getDistances();
-            this.getProjection();
+            let t_df = $.Deferred();
+            this.sampling(t_df);
+            $.when(t_df).done(n => {
+                this.getDistances();
+                this.getProjection();
+            });
         },
 
-        sampling: function () {
+        sampling: function (v_df) {
             var t_dimC = this.dimCount = this.dimensions.length, t_top = Math.pow(2, t_dimC) - 1, t_all,
-            t_count = 0, t_indeces = d3.set();
+            t_count = 0, t_indeces = new Set();
             var log = Math.log, round = Math.round, min = Math.min, max = Math.max;
             var self = this, t_dimRange = [max(self.dimRange[0], 2), min(self.dimRange[1], self.dimCount)], t_sum = 0;
-            var tt_count = 0;
             self.timer = new Date().getTime();
             for(var i = t_dimRange[0]; i <= t_dimRange[1]; i++){
-                var t_mid1 = 1, t_mid2 = 1;
-                for(var j = 1; j <= i; j++){
-                    tt_count ++;
-                    t_mid1 *= j;
-                    t_mid2 *= (t_dimC - j + 1);
-                }
-                t_sum += t_mid2 / t_mid1;
+                let t_comb = Combinations(t_dimC, i);
+                t_sum += t_comb;
             }
             t_all = min(self.sampleCount, t_sum);
-            console.info("SubMapCollection: Sampling rate: " + (t_all / t_sum * 100).toFixed(2) + "%");
-            while(t_count < t_all){
-                var t_st = self.binaryRandom([0, t_top], t_dimRange);
-                if(!t_indeces.has(t_st)){
-                    t_indeces.add(t_st);
-                    self.add(new SubMap_Model({code: t_st, dimensions: self.dimensions, id: t_count, collection: self}));
-                    t_count ++;
+            self.trigger("SubMapCollection__Panda",{
+                subDims: t_dimC,
+                subRange: t_dimRange,
+                subNumber: t_all,
+            }, "subCodes = Subsampling(subRange, subDims, subNumber)", function(v_codes){
+                for(let i = 0; i < v_codes.length; i++){
+                    let t_code = v_codes[i].join("");
+                    t_indeces.add(t_code);
+                    self.add(new SubMap_Model({code: t_code, dimensions: self.dimensions, id: i, collection: self}))
                 }
-            }
-            self.subIndex = t_indeces;
-            self.sampleCount = t_count;
+                self.subIndex = t_indeces;
+                self.sampleCount = v_codes.length;
+                console.info("SubMapCollection: Sampling rate: " + (v_codes.length / t_sum * 100).toFixed(2) + "%");
+                v_df.resolve();
+            }, true, true);
+            // while(t_count < t_all){
+            //     var t_st = self.binaryRandom([0, t_top], t_dimRange);
+            //     if(!t_indeces.has(t_st)){
+            //         t_indeces.add(t_st);
+            //         self.add(new SubMap_Model({code: t_st, dimensions: self.dimensions, id: t_count, collection: self}));
+            //         t_count ++;
+            //     }
+            // }
+            // self.subIndex = t_indeces;
+            // self.sampleCount = t_count;
         },
 
         sampleFinish: function (v_id){

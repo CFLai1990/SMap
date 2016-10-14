@@ -9,7 +9,8 @@
     'data',
     'SubMap_Collection',
     'Projection_Collection',
-    ], function(require, Mn, _, $, Backbone, Config, Variables, Data, SubMap_Collection, Projection_Collection){
+    'PandaMat',
+    ], function(require, Mn, _, $, Backbone, Config, Variables, Data, SubMap_Collection, Projection_Collection, PandaMat){
         'use strict';
 
         var dot=numeric.dot, trans=numeric.transpose, sub=numeric.sub, div=numeric.div, clone=numeric.clone, getBlock=numeric.getBlock,
@@ -41,6 +42,8 @@
 
             bindAll: function(){
                 this.listenTo(this.data, "Data__DataReady", this.updateData);
+                this.listenTo(this.data, "Data__Panda", this.panda);
+                this.listenTo(this.SubMap_Collection, "SubMapCollection__Panda", this.panda);
                 this.listenTo(this.SubMap_Collection, "Transmission", this.transmitInfo);
             },
 
@@ -77,5 +80,26 @@
                 var self = this;
                 self.trigger(v_info.message, v_info.data);
             },
+
+            panda: function(v_data, v_command, v_callback, v_glb = true, v_return = false){
+                let t_command = v_command;
+                console.time(`PandaMat ${v_command}`);
+                PandaMat.compute({
+                    panda: {
+                        data: v_data,
+                        command: v_command,
+                        global: v_glb,
+                        return: v_return,
+                    },
+                    sucess: function(v_result){
+                        console.timeEnd(`PandaMat ${v_command}`);
+                        v_callback(v_result);
+                    },
+                    error: function(v_message){
+                        console.timeEnd(`PandaMat ${v_command}`);
+                        console.error(v_message);
+                    },
+                });
+            }, 
     }))();
 });

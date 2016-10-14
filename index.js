@@ -1,4 +1,4 @@
-var root = __dirname, glbTest = true, port = 3333;
+var root = __dirname, glbTest = true, port = 2050;
 var database = require("./server/database/database.js");
 var logger = require("./server/logger.js").initialize();
 database.initialize(logger);

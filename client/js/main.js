@@ -27,6 +27,8 @@ require.config({
         'numeric': ['../bower_components/numericjs/src/numeric'],
         'densityClustering': ['../bower_components/density-clustering/dist/clustering'],
         'hull': ['../bower_components/hull-js/dist/hull'],
+        'combinations': ['../node_modules/combinations-js/amd/index'],
+        'PandaMat': ['../bower_components/pandamat/pandamat'],
 
         'Switch': 'libs/bootstrapSwitch',
         'tooltip': 'libs/tooltip',

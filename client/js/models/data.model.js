@@ -26,7 +26,6 @@ define([
 
         update: function(options){
             var t_defaults = {
-                distArray: null,
                 distParameters: {
                     range: null,
                     density: null,
@@ -58,16 +57,33 @@ define([
                 t_array.push(_.toArray(d));
             });
             Config.get("data").data = this.data;
-            var tt_array = this.dataArray = MDS.normalizeData(t_array), t_max = 0;
-            this.distArray = MDS.getSquareDistances(tt_array);
-            for(var i in tt_array){
-                var t_l = norm2(tt_array[i]);
-                if(t_l > t_max){
-                    t_max = t_l;
+            var t_df1 = $.Deferred(), t_max = 0;
+            self.trigger("Data__Panda", {
+                    data: t_array,
+                }, "normData = Normalize(data)",
+                function(vv_data){
+                    self.dataArray = vv_data;
+                    t_df1.resolve(vv_data);
+            }, true, true);
+            $.when(t_df1).done(function(vv_data){
+                for(var i in vv_data){
+                    var t_l = norm2(vv_data[i]);
+                    if(t_l > t_max){
+                        t_max = t_l;
+                    }
                 }
-            }
-            Config.get("data").maxVector = t_max;
-            this.trigger("Data__DataReady");
+                Config.get("data").maxVector = t_max;
+                self.trigger("Data__DataReady");
+            });
+            // var tt_array = this.dataArray = MDS.normalizeData(t_array), t_max = 0;
+            // for(var i in tt_array){
+            //     var t_l = norm2(tt_array[i]);
+            //     if(t_l > t_max){
+            //         t_max = t_l;
+            //     }
+            // }
+            // Config.get("data").maxVector = t_max;
+            // this.trigger("Data__DataReady");
         },
 
         clustering: function(v_data){
@@ -76,7 +92,7 @@ define([
         },
 
         getClusteringParameters: function(v_data){
-            var t_dist = MDS.getSquareDistances(v_data), t_distArray = [], t_range = 0, t_n = this.distParameters.density = 6;
+            var t_dist = MDS.getSquareDistances(v_data), t_range = 0, t_n = this.distParameters.density = 6;
             for(var i in t_dist){
                 var t_d = t_dist[i].slice(0);
                 t_d.sort();
