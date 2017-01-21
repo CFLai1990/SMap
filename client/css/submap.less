@@ -1,5 +1,138 @@
 .SubMapModel circle{
-	fill: @FillDeep;
+	//fill: @FillDeep;
+	opacity: 0.3;
 	stroke: none;
 	cursor: @Pointer;
+}
+
+.SubMapGrid path.ring{
+	fill: @FillMedian;
+	stroke: none;
+	cursor: @Pointer;
+}
+
+.SubMapGrid path.cell{
+	fill: @FillLight;
+	stroke: none;
+	cursor: @Pointer;
+}
+
+.SubMapGrid circle, .SubMapGrid path.frame{
+	stroke: @FillDeep;
+	stroke-width: @StrokeThick;
+	fill: none;
+	cursor: @Pointer;
+}
+
+.SubMapGrid path.frame.light{
+	stroke:@FillLight;
+	stroke-width: 0.8;
+}
+
+.SubMapGrid line.weights{
+	stroke: @FillDeep;
+	stroke-width: @StrokeThin;
+	fill: none;
+	cursor: @Pointer;
+}
+
+.SubMapTriangles path{
+	stroke: @FillDeep;
+	stroke-width: @StrokeThin;
+	fill: none;
+}
+
+.SubMapTestCols circle{
+	stroke: none;
+	fill: @FillDeep;
+}
+
+.SubMapGrids{
+	cursor: pointer;
+}
+
+.SubMapGrids.empty{
+	cursor: default;
+}
+
+.SubMapGrids.selected path{
+	stroke: #000;
+	stroke-width: 1.1px;
+}
+
+.SubMapGrids line{
+	stroke: #000;
+	stroke-linecap: round;
+}
+
+.SubMapGrids path.frame{
+	fill: none;
+}
+
+.SubMapGrids.empty path{
+	stroke: #000;
+	stroke-width: 0.5;
+	opacity: 0.2;
+}
+
+.subGlyph{
+	fill: @FillDeep;
+	stroke: @FillDeep;
+}
+
+.subGlyph.empty{
+	fill: none;
+	stroke: @FillDeep;
+}
+
+.subEdge path{
+	stroke: none;
+}
+
+.subEdge line{
+	stroke: @FillDeep;
+}
+
+.SubMapDim path.frame{
+	stroke:@FillLight;
+	stroke-width: @StrokeThin;
+	fill: none;
+}
+
+.SubMapDim path.bar{
+	stroke:@FillDeep;
+	stroke-width: @StrokeThin;
+	fill: @FillMedian;
+}
+
+.SubMapDim.active path.bar{
+	stroke-width: @StrokeThick;
+}
+
+.SubMapDim{
+	cursor: pointer;
+	opacity: 0.6;
+}
+
+.SubMapDim.active, .SubMapDim:hover{
+	opacity: 1.0;
+}
+
+.SubMapDim circle{
+	stroke: @FillLight;
+	stroke-width: @StrokeThin;
+	cursor: pointer;
+}
+
+.SubMapDim circle.On{
+	fill: @FillMedian;
+}
+
+.SubMapDim circle.Off{
+	fill: #fff;
+}
+
+.SubMapDim circle.active{
+	stroke: @FillDeep;
+	stroke-width: @StrokeThick;
 }

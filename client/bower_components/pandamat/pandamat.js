@@ -6,7 +6,7 @@ define([
 		let PandaMat = (typeof exports === "undefined")?(function pandamat() {}):(exports);
 		if(typeof global !== "undefined") { global.PandaMat = PandaMat; }
 
-		window.onunload = function(){
+		window.onbeforeunload = function(){
 			if(PandaMat.stream){
 				close();
 			}
@@ -14,11 +14,12 @@ define([
 
 		PandaMat.version = "1.0.0";
 		let serverAddress = 'ws://vis.pku.edu.cn/PandaMat/Server/', connectionWait = 10000, poolPrefix = "PPool_",
-		connectCheckInterval = 5, ipAddress, ipdf = $.Deferred();
-		$.get("http://ipinfo.io", function(response) {
-		    ipAddress = response.ip;
-		    ipdf.resolve();
-		}, "jsonp");
+		connectCheckInterval = 5, ipAddress;
+		//let ipdf = $.Deferred();
+		// $.get("http://ipinfo.io", function(response) {
+		//     ipAddress = response.ip;
+		//     ipdf.resolve();
+		// }, "jsonp");
 
 		function replace(v_origin, v_replace){
 			if(v_origin){
@@ -46,10 +47,10 @@ define([
             	if(v_callback){
 	            	v_callback(true);
             	}
-            	$.when(ipdf)
-            	.done(function(){
-	            	strSend(t_stream, {state: "address", data: ipAddress});
-            	});
+            	// $.when(ipdf)
+            	// .done(function(){
+	            // 	strSend(t_stream, {state: "address", data: ipAddress});
+            	// });
             };
             t_stream.onclose = function(e){
             	if(!this.used){

@@ -7,8 +7,9 @@ define([
     'datacenter',
     'config',
     'Base',
+    'HDPainter',
     'SubMap_ModelView',
-    ], function(require, Mn, _, $, Backbone, Datacenter, Config, Base, SubMap_ModelView) {
+    ], function(require, Mn, _, $, Backbone, Datacenter, Config, Base, Hdpainter, SubMap_ModelView) {
         'use strict';
 
         String.prototype.visualLength = function(d)
@@ -42,6 +43,7 @@ define([
                 t_size = Math.min(t_width, t_height);
                 var t_left = (t_width - t_size) / 2 + t_size * 0.05, t_top = (t_height - t_size) / 2 + t_size * 0.05
                 var t_defaults = {
+                    canvasRange: [[t_left, t_left + t_size * 0.9], [t_top, t_top + t_size * 0.9]],
                     scale: {
                         x: d3.scale.linear().range([t_left, t_left + t_size * 0.9]),
                         y: d3.scale.linear().range([t_top, t_top + t_size * 0.9]),
@@ -58,6 +60,11 @@ define([
                         size: t_size,
                         r: 6,
                     },
+                    painter: HDPainter.init(this.d3el, {
+                        canvasRange: [[t_left, t_left + t_size * 0.9], [t_top, t_top + t_size * 0.9]],
+                        tooltipContainer: "#rightTop",
+                        interSteps: this.collection.frames,
+                    }),
                 };
                 options = options || {};
                 _.extend(this, t_defaults);
@@ -71,14 +78,18 @@ define([
             },
 
             bindAll: function(){
-                var self = this;
-                self.listenTo(Datacenter, "SubMapCollectionView__ShowProjection", self.getProjection);
-                self.listenTo(self.collection, "ProjectionCollection__ShowProjection", self.showProjection);
-                self.listenTo(self.collection, "ProjectionCollection__ClearAll", self.clearAll);
+                this.listenTo(Datacenter, "SubMapCollectionView__ShowProjection", this.getProjection);
+                this.listenTo(Datacenter, "SubMapCollectionView__HideProjection", this.hideProjection);
+                this.listenTo(this.collection, "ProjectionCollection__ShowProjection", this.showProjection);                
+                this.listenTo(this.collection, "ProjectionCollection__ClearAll", this.clearAll);
             },
 
             getProjection: function(v_code){
                 var self = this, t_projection = self.collection.getProjection(v_code);
+            },
+
+            hideProjection: function(){
+                this.d3el.selectAll("g").remove();
             },
 
             updateProjection: function(v_proj){
@@ -103,190 +114,256 @@ define([
                 .attr("r", t_r);
             },
 
-            showProjection: function(v_start, v_cord){
-            //     console.log("EEEEEEE");
-            var tt_data = Config.get("data"), self = this, t_scale = this.scale, t_shorter = 0.9, t_longer  = 0.95, t_dimensions = tt_data.dimensions.values();
-            var t_dark = Config.get("lightColor").dark, t_max = Config.get("data").maxVector * 0.8, t_range = [-t_max, t_max];
-            var tt_proj = self.collection.projection;
-            if(!this.ready){
-                var t_proj = [], t_data = tt_data.data;
-                this.scale.x.domain(t_range);
-                this.scale.y.domain(t_range);
-                t_scale = this.scale;
-                var t_pts = this.d3el.append("g")
-                .classed("ProjectionPoints", true);
-                var t_g = t_pts.selectAll(".ProjectionPoint")
-                .data(tt_proj)
-                .enter()
-                .append("g")
-                .attr("class","ProjectionPoint")
-                .attr("index", function(t_d, t_i){
-                    return t_i;
-                })
-                .attr("id",function(t_d, t_i){
-                    return "ProjectionPoint_"+t_i;
-                })
-                .attr("transform",function(t_d, t_i){
-                    var t_pos = Basic.scale(t_scale, t_d);
-                    t_proj[t_i] = t_pos;
-                    return "translate(" + t_pos + ")";
-                })
-                .attr("data-html", true)
-                .attr("data-original-title", function(t_d, t_i){
-                    var t_text = "";
-                    tt_data.dimensions.forEach(function(t_key, t_value){
-                        t_text += t_value+": "+t_data[t_i][t_value]+"</br>";
-                    });
-                    return t_text;
-                })
-                .attr("data-placement", "bottom")
-                .on("mouseover", function(){
-                    var t_self = this;
-                    clearTimeout(self.hover.timer);
-                    self.hover.timer = setTimeout(function(){
-                        $(t_self).tooltip("show");
-                    }, self.hover.time);
-                })
-                .on("mouseout", function(){
-                    clearTimeout(self.hover.timer);
-                    self.hover.timer = null;
-                    $(this).tooltip("hide");
-                });
-                $(t_g[0])
-                .tooltip({
-                    container: "#rightTop",
-                    trigger: "manual",
-                });
-                t_g.append("circle")
-                .attr("cx",0)
-                .attr("cy",0)
-                .attr("color", function(t_d, t_i){
-                    return t_dark;
-                })
-                .attr("r",function(t_d, t_i){
-                    return self.parameter.r;
-                })
-                .attr("fill", function(t_d, t_i){
-                    return $(this).attr("color");
-                });
-                self.projection = t_proj;
-                //draw axes
-                var t_axes = this.d3el.append("g")
-                .classed("ProjectionAxes", true);
-                var t_cords = self.collection.coordinates;
-                var t_axis = t_axes.selectAll(".ProjectionAxis")
-                .data(t_cords)
-                .enter()
-                .append("g")
-                .attr("class", "ProjectionAxis")
-                .attr("id", function(t_d, t_i){
-                    return "ProjectionAxis_" + t_i;
-                })
-                t_axis.append("line")
-                .attr("x1", t_scale.x(0))
-                .attr("y1", t_scale.y(0))
-                .attr("x2", function(t_d){ return t_scale.x(t_d[0] * t_max * t_shorter);})
-                .attr("y2", function(t_d){ return t_scale.y(t_d[1] * t_max * t_shorter);});
-                t_axis.append("text")
-                .attr("tlength", function(t_d, t_i){
-                    var t_text = t_dimensions[t_i];
-                    var t_size = t_text.visualLength(self.fontSize);
-                    return t_size.join(",");
-                })
-                .attr("x", function(t_d){
-                    var t_size = $(this).attr("tlength").split(",");
-                    return t_scale.x(t_d[0] * t_max * t_longer) - t_size[0] / 2;
-                })
-                .attr("y", function(t_d){
-                    var t_size = $(this).attr("tlength").split(",");
-                    return t_scale.y(t_d[1] * t_max * t_longer) + t_size[1] / 2;
-                })
-                .text(function(t_d, t_i){
-                    return t_dimensions[t_i];
-                });
-                this.ready = true;
-            }else{
-                var t_max = t_scale.x.domain();
-                t_max = t_max[1];
-                var t_frame = self.collection.frames, t_last = (self.collection.nowFrame == t_frame - 1), t_proj = [];
-                var t_axes = this.d3el.selectAll(".ProjectionAxis")
-                .data(self.collection.coordinates);
-                t_axes.select("line")
-                .transition()
-                .ease("linear")
-                .duration(self.transition.interval)
-                .attr("x2", function(t_d){ return t_scale.x(t_d[0] * t_max * t_shorter);})
-                .attr("y2", function(t_d){ return t_scale.y(t_d[1] * t_max * t_shorter);});
-                t_axes.select("text")
-                .attr("x", function(t_d){
-                    var t_size = $(this).attr("tlength").split(",");
-                    return t_scale.x(t_d[0] * t_max * t_longer) - t_size[0] / 2;
-                })
-                .attr("y", function(t_d){
-                    var t_size = $(this).attr("tlength").split(",");
-                    return t_scale.y(t_d[1] * t_max * t_longer) + t_size[1] / 2;
-                });
-                var t_projection = this.collection.projection;
-                this.d3el.selectAll(".ProjectionPoint")
-                .data(this.collection.projection)
-                .transition()
-                .ease("linear")
-                .duration(self.transition.interval)
-                .attr("transform",function(t_d){
-                    var t_i = parseInt($(this).attr("index"));
-                    var t_pos = Basic.scale(t_scale, t_projection[t_i]);
-                    if(t_last){
-                        t_proj[t_i] = t_pos;
-                    }
-                    return "translate("+t_pos+")";
-                });
-                this.projection = t_proj;
-                if(v_start){
-                    this.d3el.selectAll(".ProjectionPoints circle")
-                    .attr("color", function(t_d){
-                        return t_dark;
+            showProjection: function(v_cords, v_projections, v_interpolate){
+                this.painter.setCanvas(this.d3el);
+                this.painter.stopAll();
+                this.painter.setData(Config.get("data").data, Config.get("data").dimensions.values());
+                this.painter.drawBiplot(v_projections, v_cords, v_interpolate);
+            },
+
+            showProjection_old: function(){
+                let t_projection = this.collection.projection,
+                    t_g = this.d3el.selectAll(".ProjectionPoint"),
+                    t_dataObj = Config.get("data"),
+                    t_data = t_dataObj.data,
+                    t_r = this.parameter.r,
+                    t_this = this;
+                if(t_g.empty()){
+                    t_g = this.d3el.selectAll(".ProjectionPoint")
+                    .data(t_projection)
+                    .enter()
+                    .append("g")
+                    .attr("class","ProjectionPoint")
+                    .attr("transform", (t_d, t_i) => {
+                        return "translate(" + Basic.scale(this.scale, t_d) + ")";
                     })
-                    .transition()
-                    .duration(self.transition.duration)
-                    .ease("linear")
-                    .attr("r", function(){
-                        return self.parameter.r;
+                    .attr("id",function(t_d, t_i){
+                        return "ProjectionPoint_"+t_i;
+                    })
+                    .attr("data-html", true)
+                    .attr("data-original-title", function(t_d, t_i){
+                        var t_text = "";
+                        t_dataObj.dimensions.forEach(function(t_key, t_value){
+                            t_text += t_value+": "+t_data[t_i][t_value]+"</br>";
+                        });
+                        return t_text;
+                    })
+                    .attr("data-placement", "bottom")
+                    .on("mouseover", function(){
+                        clearTimeout(t_this.hover.timer);
+                        t_this.hover.timer = setTimeout(function(){
+                            $(this).tooltip("show");
+                        }, t_this.hover.delay);
+                    })
+                    .on("mouseout", function(){
+                        clearTimeout(t_this.hover.timer);
+                        t_this.hover.timer = null;
+                        $(this).tooltip("hide");
                     });
-                    var tt_cords = self.collection.basis2;
-                    this.d3el.selectAll(".ProjectionAxis text")
+                    $(t_g[0])
+                    .tooltip({
+                        container: "#rightTop",
+                        trigger: "manual",
+                    });
+                    t_g.append("circle")
+                    .attr("cx",0)
+                    .attr("cy",0)
+                    .attr("r", t_r);
+                }else{
+                    t_g
                     .transition()
                     .ease("linear")
-                    .duration(self.transition.duration)
-                    .style("opacity", function(t_d, t_i){
-                        var t_d = tt_cords[t_i], t = t_d[0]*t_d[0] + t_d[1]*t_d[1];
-                        console.log($(this).text() + " : " + t);
-                        if(t < 0.1){
-                            return 0;
-                        }else{
-                            return 1;
-                        }
+                    .attr("transform", (t_d, t_i) => {
+                        return "translate(" + Basic.scale(this.scale, t_projection[t_i]) + ")";
                     });
                 }
-            }
-        },
+            },
 
-        clearAll: function(){
-            var self = this;
-            self.d3el.selectAll("g")
-            .remove();
-            var t_defaults = {
-                fontSize: 12,
-                ready: false,
-                hover: {
-                    timer: null,
-                    time: 1500,
-                    shown: null,
-                },
-                transition: Config.get("transition"),
-            };
-            _.extend(this, t_defaults);
-        },
-    },Base));
+            showProjection_oldold: function(v_start, v_cord){
+                var tt_data = Config.get("data"), self = this, t_scale = this.scale, t_shorter = 0.9, t_longer  = 0.95, t_dimensions = tt_data.dimensions.values();
+                var t_dark = Config.get("lightColor").dark, t_max = Config.get("data").maxVector * 0.8, t_range = [-t_max, t_max];
+                var tt_proj = self.collection.projection;
+                if(!this.ready){
+                    var t_proj = [], t_data = tt_data.data;
+                    this.scale.x.domain(t_range);
+                    this.scale.y.domain(t_range);
+                    t_scale = this.scale;
+                    var t_pts = this.d3el.append("g")
+                    .classed("ProjectionPoints", true);
+                    var t_g = t_pts.selectAll(".ProjectionPoint")
+                    .data(tt_proj)
+                    .enter()
+                    .append("g")
+                    .attr("class","ProjectionPoint")
+                    .attr("index", function(t_d, t_i){
+                        return t_i;
+                    })
+                    .attr("id",function(t_d, t_i){
+                        return "ProjectionPoint_"+t_i;
+                    })
+                    .attr("transform",function(t_d, t_i){
+                        var t_pos = Basic.scale(t_scale, t_d);
+                        t_proj[t_i] = t_pos;
+                        return "translate(" + t_pos + ")";
+                    })
+                    .attr("data-html", true)
+                    .attr("data-original-title", function(t_d, t_i){
+                        var t_text = "";
+                        tt_data.dimensions.forEach(function(t_key, t_value){
+                            t_text += t_value+": "+t_data[t_i][t_value]+"</br>";
+                        });
+                        return t_text;
+                    })
+                    .attr("data-placement", "bottom")
+                    .on("mouseover", function(){
+                        var t_self = this;
+                        clearTimeout(self.hover.timer);
+                        self.hover.timer = setTimeout(function(){
+                            $(t_self).tooltip("show");
+                        }, self.hover.delay);
+                    })
+                    .on("mouseout", function(){
+                        clearTimeout(self.hover.timer);
+                        self.hover.timer = null;
+                        $(this).tooltip("hide");
+                    });
+                    $(t_g[0])
+                    .tooltip({
+                        container: "#rightTop",
+                        trigger: "manual",
+                    });
+                    t_g.append("circle")
+                    .attr("cx",0)
+                    .attr("cy",0)
+                    .attr("color", function(t_d, t_i){
+                        return t_dark;
+                    })
+                    .attr("r",function(t_d, t_i){
+                        return self.parameter.r;
+                    })
+                    .attr("fill", function(t_d, t_i){
+                        return $(this).attr("color");
+                    });
+                    self.projection = t_proj;
+                    //draw axes
+                    var t_axes = this.d3el.append("g")
+                    .classed("ProjectionAxes", true);
+                    var t_cords = self.collection.coordinates;
+                    var t_axis = t_axes.selectAll(".ProjectionAxis")
+                    .data(t_cords)
+                    .enter()
+                    .append("g")
+                    .attr("class", "ProjectionAxis")
+                    .attr("id", function(t_d, t_i){
+                        return "ProjectionAxis_" + t_i;
+                    })
+                    t_axis.append("line")
+                    .attr("x1", t_scale.x(0))
+                    .attr("y1", t_scale.y(0))
+                    .attr("x2", function(t_d){ return t_scale.x(t_d[0] * t_max * t_shorter);})
+                    .attr("y2", function(t_d){ return t_scale.y(t_d[1] * t_max * t_shorter);});
+                    t_axis.append("text")
+                    .attr("tlength", function(t_d, t_i){
+                        var t_text = t_dimensions[t_i];
+                        var t_size = t_text.visualLength(self.fontSize);
+                        return t_size.join(",");
+                    })
+                    .attr("x", function(t_d){
+                        var t_size = $(this).attr("tlength").split(",");
+                        return t_scale.x(t_d[0] * t_max * t_longer) - t_size[0] / 2;
+                    })
+                    .attr("y", function(t_d){
+                        var t_size = $(this).attr("tlength").split(",");
+                        return t_scale.y(t_d[1] * t_max * t_longer) + t_size[1] / 2;
+                    })
+                    .text(function(t_d, t_i){
+                        return t_dimensions[t_i];
+                    });
+                    this.ready = true;
+                }else{
+                    var t_max = t_scale.x.domain();
+                    t_max = t_max[1];
+                    var t_frame = self.collection.frames, t_last = (self.collection.nowFrame == t_frame - 1), t_proj = [];
+                    var t_axes = this.d3el.selectAll(".ProjectionAxis")
+                    .data(self.collection.coordinates);
+                    t_axes.select("line")
+                    .transition()
+                    .ease("linear")
+                    .duration(self.transition.interval)
+                    .attr("x2", function(t_d){ return t_scale.x(t_d[0] * t_max * t_shorter);})
+                    .attr("y2", function(t_d){ return t_scale.y(t_d[1] * t_max * t_shorter);});
+                    t_axes.select("text")
+                    .attr("x", function(t_d){
+                        var t_size = $(this).attr("tlength").split(",");
+                        return t_scale.x(t_d[0] * t_max * t_longer) - t_size[0] / 2;
+                    })
+                    .attr("y", function(t_d){
+                        var t_size = $(this).attr("tlength").split(",");
+                        return t_scale.y(t_d[1] * t_max * t_longer) + t_size[1] / 2;
+                    });
+                    var t_projection = this.collection.projection;
+                    this.d3el.selectAll(".ProjectionPoint")
+                    .data(this.collection.projection)
+                    .transition()
+                    .ease("linear")
+                    .duration(self.transition.interval)
+                    .attr("transform",function(t_d){
+                        var t_i = parseInt($(this).attr("index"));
+                        var t_pos = Basic.scale(t_scale, t_projection[t_i]);
+                        if(t_last){
+                            t_proj[t_i] = t_pos;
+                        }
+                        return "translate("+t_pos+")";
+                    });
+                    this.projection = t_proj;
+                    if(v_start){
+                        this.d3el.selectAll(".ProjectionPoints circle")
+                        .attr("color", function(t_d){
+                            return t_dark;
+                        })
+                        .transition()
+                        .duration(self.transition.duration)
+                        .ease("linear")
+                        .attr("r", function(){
+                            return self.parameter.r;
+                        });
+                        var tt_cords = self.collection.basis2;
+                        this.d3el.selectAll(".ProjectionAxis text")
+                        .transition()
+                        .ease("linear")
+                        .duration(self.transition.duration)
+                        .style("opacity", function(t_d, t_i){
+                            var t_d = tt_cords[t_i], t = t_d[0]*t_d[0] + t_d[1]*t_d[1];
+                            if(t < 0.1){
+                                return 0;
+                            }else{
+                                return 1;
+                            }
+                        });
+                    }
+                }
+            },
 
-return Projection_CollectionView;
+            clearAll: function(){
+                this.painter.clearAll();
+                var t_defaults = {
+                    fontSize: 12,
+                    ready: false,
+                    hover: {
+                        timer: null,
+                        time: 1500,
+                        shown: null,
+                    },
+                    transition: Config.get("transition"),
+                    painter: HDPainter.init(this.d3el, {
+                        canvasRange: this.canvasRange,
+                        tooltipContainer: "#rightTop",
+                        interSteps: this.collection.frames,
+                    }),
+                };
+                _.extend(this, t_defaults);
+            },
+        },Base));
+
+    return Projection_CollectionView;
 });

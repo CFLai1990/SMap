@@ -30,9 +30,19 @@ define([
             'dataPath': 'data/Iris.csv',//Iris.csv, Car.csv, 3DBall.csv, 2DPlanes.csv, swissroll.csv
             'currentData': 'Iris',
             'distType': "KNN",//"KNN", "Matrix"
-            'sampleCount': 100,
+            'glyphType': "fan",//"fill", "fan", "stick"
+            'gridType': "hexagon",
+            'mapType': "cell",//"diff", "cell"
+            'centerColor': [1,0.1,0.4],
+            'sampleCount': 400,
+            'gridScaling': 3,
+            'gridNumber': 16,
             'dimRange': [2, Infinity],
-            'KNN_K': 5,
+            'KNN_K': 6,
+            'SUB_K': 6,
+            'KNNGDistWeight': 1.0,
+            'KNN_Precision': 'precise',
+            'TOPIC_N': 4,
             'cluster': null,
             'clusterNumber': null,
             'clusterColors': null,
@@ -72,8 +82,8 @@ define([
                 leftTopHeightRatio: 0.98,
                 leftBtmHeightRatio: 0.00,
                 leftMidHeightRatio: 0.00,
-                rightTopHeightRatio: 0.98,
-                rightBtmHeightRatio: 0.00,
+                rightTopHeightRatio: 0.00,
+                rightBtmHeightRatio: 0.98,
                 rightMidHeightRatio: 0.00,
                 marginBottomRatio: 0.02,
                 left:{

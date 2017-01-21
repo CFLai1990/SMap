@@ -28,7 +28,7 @@ define([
 
         regions:{
             'submap': '#leftTop',
-            'projection': '#rightTop',
+            'projection': '#rightBottom',
         },
 
         initialize: function (options) {

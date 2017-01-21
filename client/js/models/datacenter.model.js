@@ -45,6 +45,8 @@
                 this.listenTo(this.data, "Data__Panda", this.panda);
                 this.listenTo(this.SubMap_Collection, "SubMapCollection__Panda", this.panda);
                 this.listenTo(this.SubMap_Collection, "Transmission", this.transmitInfo);
+                this.listenTo(this.Projection_Collection, "ProjectionCollection__Panda", this.panda);
+                this.listenTo(this.Projection_Collection, "Transmission", this.transmitInfo);
             },
 
             start: function(){

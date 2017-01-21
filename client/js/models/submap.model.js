@@ -43,14 +43,14 @@ define([
                 self.dimCount = t_count;
                 self.set("dimensions", t_dims);
                 var t_data = self.getData();
-                switch(Config.get("distType")){
-                    case "KNN":
-                        self.getKNNG(t_data);
-                    break;
-                    case "Matrix":
-                        self.getMatrix(t_data);
-                    break;
-                }
+                // switch(Config.get("distType")){
+                //     case "KNN":
+                //         self.getKNNG(t_data);
+                //     break;
+                //     case "Matrix":
+                //         self.getMatrix(t_data);
+                //     break;
+                // }
             },
 
             getData: function(){

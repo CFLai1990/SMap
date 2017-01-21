@@ -5,8 +5,7 @@ define([
     'jquery',
     'config',
     'backbone',
-    'densityClustering',
-], function(require, Mn, _, $, Config, Backbone, DensityClustering) {
+], function(require, Mn, _, $, Config, Backbone) {
     'use strict';
 
     var dot=numeric.dot, trans=numeric.transpose, sub=numeric.sub, div=numeric.div, clone=numeric.clone, getBlock=numeric.getBlock,
@@ -86,35 +85,35 @@ define([
             // this.trigger("Data__DataReady");
         },
 
-        clustering: function(v_data){
-            this.getClusteringParameters(v_data);
-            return this.getClusters(v_data);
-        },
+        // clustering: function(v_data){
+        //     this.getClusteringParameters(v_data);
+        //     return this.getClusters(v_data);
+        // },
 
-        getClusteringParameters: function(v_data){
-            var t_dist = MDS.getSquareDistances(v_data), t_range = 0, t_n = this.distParameters.density = 6;
-            for(var i in t_dist){
-                var t_d = t_dist[i].slice(0);
-                t_d.sort();
-                t_range += t_d[t_n];
-            }
-            t_range = t_range / t_dist.length * 1.1;
-            this.distParameters.range = t_range;
-        },
+        // getClusteringParameters: function(v_data){
+        //     var t_dist = MDS.getSquareDistances(v_data), t_range = 0, t_n = this.distParameters.density = 6;
+        //     for(var i in t_dist){
+        //         var t_d = t_dist[i].slice(0);
+        //         t_d.sort();
+        //         t_range += t_d[t_n];
+        //     }
+        //     t_range = t_range / t_dist.length * 1.1;
+        //     this.distParameters.range = t_range;
+        // },
 
-        getClusters: function(v_data){
-            var t_dbscan = new DBSCAN();
-            var tt_clusters = t_dbscan.run(v_data, this.distParameters.range, this.distParameters.density);
-            var t_cluster = [];
-            for(var i in tt_clusters){
-                for(var j in tt_clusters[i]){
-                    t_cluster[tt_clusters[i][j]] = i;
-                }
-            }
-            Config.set("cluster", t_cluster);
-            Config.set("clusterNumber", tt_clusters.length);
-            return tt_clusters;
-        },
+        // getClusters: function(v_data){
+        //     var t_dbscan = new DBSCAN();
+        //     var tt_clusters = t_dbscan.run(v_data, this.distParameters.range, this.distParameters.density);
+        //     var t_cluster = [];
+        //     for(var i in tt_clusters){
+        //         for(var j in tt_clusters[i]){
+        //             t_cluster[tt_clusters[i][j]] = i;
+        //         }
+        //     }
+        //     Config.set("cluster", t_cluster);
+        //     Config.set("clusterNumber", tt_clusters.length);
+        //     return tt_clusters;
+        // },
     });
     return data;
 });
