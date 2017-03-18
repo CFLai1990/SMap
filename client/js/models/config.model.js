@@ -33,8 +33,9 @@ define([
             'glyphType': "fan",//"fill", "fan", "stick"
             'gridType': "hexagon",
             'mapType': "cell",//"diff", "cell"
+            'listType': "circle",//"rectangle", "circle"
             'centerColor': [1,0.1,0.4],
-            'sampleCount': 400,
+            'sampleCount': 1000,
             'gridScaling': 3,
             'gridNumber': 16,
             'dimRange': [2, Infinity],
@@ -45,7 +46,9 @@ define([
             'TOPIC_N': 4,
             'cluster': null,
             'clusterNumber': null,
+            'clusterLevels': 3,
             'clusterColors': null,
+            'clusterDistMat': 'projection',//'projection','original'
             'colorInPicker': null,
             'colorPickerLeft': null,
             'changeColorID': null,
@@ -76,9 +79,11 @@ define([
                 globalWidth: null,
                 globalTop: null,
                 globalMargin: null,
-                leftWidthRatio: 0.49,
-                rightWidthRatio: 0.49,
-                marginRatio: 0.006,
+                sideWidthRatio: 0.20,
+                sideHeightRatio: 0.98,
+                leftWidthRatio: 0.40,
+                rightWidthRatio: 0.37,
+                marginRatio: 0.005,
                 leftTopHeightRatio: 0.98,
                 leftBtmHeightRatio: 0.00,
                 leftMidHeightRatio: 0.00,
@@ -120,8 +125,13 @@ define([
             },
             'transition': {
                 duration: 500,
-                quick: 200,
+                long: 2000,
+                short: 400,
                 interval: 50,
+            },
+            'minElemFunc': function(v_distMat){
+                let t_min_elem = Math.round(v_distMat.length / 20);
+                return t_min_elem < 3?3:t_min_elem;
             },
         },
     }))();

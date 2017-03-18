@@ -6,6 +6,7 @@ require.config({
         },
           'MDS': ['numeric'],
           'basicFunctions': ['numeric', 'MDS'],
+          'basicViewOperations': ['jquery', 'd3'],
           'data': ['MDS'],
           'datacenter': ['MDS'],
           'SubMap_Model': ['basicFunctions'],
@@ -14,9 +15,11 @@ require.config({
           'tooltip': ['jquery', 'bootstrap'],
           'hexbin': ['d3'],
           'voronoi': ['d3'],
-          'SubGlyph': ['d3'],
+          'SubGlyph': ['d3', 'basicViewOperations'],
           'SubRotate': ['numeric'],
           'HDPainter': ['jquery', 'd3', 'tooltip'],
+          'PDHist': ['d3'],
+          'perfectScrollbar': ['jquery'],
      },
     paths: {
         // libs loader
@@ -34,17 +37,21 @@ require.config({
         'voronoi': ['../node_modules/d3-voronoi/build/d3-voronoi'],
         'numeric': ['../bower_components/numericjs/src/numeric'],
         'hull': ['../bower_components/hull-js/dist/hull'],
+        'spin': ['../node_modules/spin/dist/spin.min'],
         'combinations': ['../node_modules/combinations-js/amd/index'],
         'PandaMat': ['../bower_components/pandamat/pandamat'],
+        'perfectScrollbar': ['../bower_components/perfect-scrollbar/perfect-scrollbar.jquery'],
 
         'Switch': 'libs/bootstrapSwitch',
         'tooltip': 'libs/tooltip',
         'MDS': 'libs/mds',
         'basicFunctions': 'libs/basicFunctions',
+        'basicViewOperations': 'libs/basicViewOperations',
         'Tiling': 'libs/tiling',
         'SubGlyph': 'libs/subglyph',
         'SubRotate': 'libs/subrotate',
         'HDPainter': 'libs/hdpainter',
+        'PDHist': 'libs/pandaHist',
         'backbone.routefilter': '../bower_components/backbone.routefilter/dist/backbone.routefilter.min',
         // templates path
         'templates': '../templates',
@@ -57,9 +64,11 @@ require.config({
         'variables': 'models/variables.model',
         'data': 'models/data.model',
         'SubMap_Model': 'models/submap.model',
+        'SubList_Model': 'models/sublist.model',
         'Projection_Model': 'models/projection.model',
         //collections
         'SubMap_Collection': 'collections/submap_Collection',
+        'SubList_Collection': 'collections/sublist_Collection',
         'Projection_Collection': 'collections/projection_Collection',
         //views
         'Base': 'views/base.view',
@@ -67,6 +76,8 @@ require.config({
         'SubMap_LayoutView': 'views/submap_Layout.view',
         'SubMap_CollectionView': 'views/submap_Collection.view',
         'SubMap_ModelView': 'views/submap_Model.view',
+        'SubList_LayoutView': 'views/sublist_Layout.view',
+        'SubList_CollectionView': 'views/sublist_Collection.view',
         'Projection_LayoutView': 'views/projection_Layout.view',
         'Projection_CollectionView': 'views/projection_Collection.view',
     }

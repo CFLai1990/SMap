@@ -8,9 +8,10 @@
     'variables',
     'data',
     'SubMap_Collection',
+    'SubList_Collection',
     'Projection_Collection',
     'PandaMat',
-    ], function(require, Mn, _, $, Backbone, Config, Variables, Data, SubMap_Collection, Projection_Collection, PandaMat){
+    ], function(require, Mn, _, $, Backbone, Config, Variables, Data, SubMap_Collection, SubList_Collection, Projection_Collection, PandaMat){
         'use strict';
 
         var dot=numeric.dot, trans=numeric.transpose, sub=numeric.sub, div=numeric.div, clone=numeric.clone, getBlock=numeric.getBlock,
@@ -36,6 +37,7 @@
                 _.extend(this, t_default);
                 this.data = new Data();
                 this.SubMap_Collection = new SubMap_Collection();
+                this.SubList_Collection = new SubList_Collection();
                 this.Projection_Collection = new Projection_Collection();
                 this.bindAll();
             },
@@ -45,6 +47,8 @@
                 this.listenTo(this.data, "Data__Panda", this.panda);
                 this.listenTo(this.SubMap_Collection, "SubMapCollection__Panda", this.panda);
                 this.listenTo(this.SubMap_Collection, "Transmission", this.transmitInfo);
+                this.listenTo(this.SubMap_Collection, "change:currentCls", this.transmitInfo);
+                this.listenTo(this.SubList_Collection, "Transmission", this.transmitInfo);
                 this.listenTo(this.Projection_Collection, "ProjectionCollection__Panda", this.panda);
                 this.listenTo(this.Projection_Collection, "Transmission", this.transmitInfo);
             },
@@ -71,6 +75,7 @@
                 Config.get("data").array = this.data.dataArray;
                 Config.get("data").distances = MDS.getSquareDistances(this.data.dataArray);
                 this.Projection_Collection.update();
+                this.SubList_Collection.update();
                 this.SubMap_Collection.update({
                     dimensions: this.data.dimensions.values(),
                     dimRange: Config.get("dimRange"),
@@ -79,8 +84,17 @@
             },
 
             transmitInfo: function(v_info){
-                var self = this;
-                self.trigger(v_info.message, v_info.data);
+                this.trigger(v_info.message, v_info.data);
+            },
+
+            requireFrom: function(v_source, v_attr){
+                return this[v_source][v_attr];
+            },
+
+            listenAndTrigger: function(v_source, v_attr, v_message){
+                this.listenTo(this[v_source], "change:" + v_attr, () => {
+                    this.trigger(v_message, this[v_source][v_attr]);
+                });
             },
 
             panda: function(v_data, v_command, v_callback, v_glb = true, v_return = false){

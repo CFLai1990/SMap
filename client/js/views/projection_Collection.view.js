@@ -85,7 +85,7 @@ define([
             },
 
             getProjection: function(v_code){
-                var self = this, t_projection = self.collection.getProjection(v_code);
+                this.collection.getProjection(v_code);
             },
 
             hideProjection: function(){

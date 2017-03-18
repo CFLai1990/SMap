@@ -1,0 +1,42 @@
+.loading{
+    position:absolute;
+    width:100%;
+    height:100%;
+
+    .back{
+        position:absolute;
+        width:100%;
+        height:100%;
+        //background-color:#ffffff;
+        background-color: #000;
+        opacity:1;
+    }
+
+    .logo{
+        position:absolute;
+        margin:50px auto;
+        font-size:30px;
+        text-align: center;
+        left:45%;
+        top:40%;
+        color: #fff;
+    }
+}
+
+.loading.middle.foggy .back{
+    opacity: 0.7;
+    -webkit-transition: @myTransition;
+    transition: @myTransition;
+}
+
+.loading.middle .back, .loading.middle .logo{
+    opacity: 0;
+    -webkit-transition: @myTransition;
+    transition: @myTransition;
+}
+
+.loading.middle.foggy .logo{
+    opacity: 1;
+    -webkit-transition: @myTransition;
+    transition: @myTransition;
+}

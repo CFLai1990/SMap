@@ -57,21 +57,31 @@
 
 .SubMapGrids.selected path{
 	stroke: #000;
-	stroke-width: 1.1px;
+	stroke-width: 0.6px;
 }
 
-.SubMapGrids line{
+.SubMapGrids line, .SubOldGrids line{
 	stroke: #000;
 	stroke-linecap: round;
+	opacity: 0.5;
 }
 
-.SubMapGrids path.frame{
+.SubMapGrids.empty{
+	cursor: move;
+}
+
+.empty.SubMapGrids line{
+	stroke: #555;
+	stroke-width: 0.5;
+	opacity: 0.1;
+}
+
+.SubMapGrids path.frame, .SubOldGrids path.frame{
 	fill: none;
 }
 
 .SubMapGrids.empty path{
-	stroke: #000;
-	stroke-width: 0.5;
+	stroke: none;
 	opacity: 0.2;
 }
 
@@ -134,5 +144,80 @@
 
 .SubMapDim circle.active{
 	stroke: @FillDeep;
+	stroke-width: @StrokeThick;
+}
+
+.SubMapClusters line{
+	stroke-width: @StrokeThin;
+	stroke-linecap: round;
+}
+
+.SubMapClusters.pinned line{
+	stroke-width: @StrokeThick;
+}
+
+.SubMapClusters line.chosen{
+	stroke-width: @StrokeThick;
+}
+
+.SubMapClusters.Outliers path{
+	stroke: none;
+}
+
+.SubMapClusters path{
+	fill: rgb(255,255,255);
+	stroke: none;
+	cursor: pointer;
+	stroke-linecap: round;
+}
+
+.SubMapClusters.Outliers path{
+	stroke: none;
+}
+
+.dimFan{
+	display: none;
+}
+
+.dimFan.visible{
+	display: block
+}
+
+.SubMapClusters{
+	display: none;
+}
+
+.SubMapClusters.visible{
+	display: block;
+}
+
+.SubMapSShotRing{
+	fill: none;
+	stroke: @FillMedian;
+	stroke-width: @StrokeThick;
+}
+
+.SubMapSShot{
+	stroke: @FillMedian;
+	stroke-width: @StrokeThin;
+}
+
+.SubMapSShot .SubMapSSAnchor{
+	stroke: none;
+	fill: @FillMedian;
+}
+
+.SubMapSShot.chosen .SubMapSSAnchor{
+	fill: @FillDark;
+}
+
+.SubMapSShot .SubMapSnapshot{
+	cursor: pointer;
+	stroke: @FillMedian;
+	stroke-width: @StrokeThin;
+}
+
+.SubMapSShot.chosen .SubMapSnapshot{
+	stroke: @FillDark;
 	stroke-width: @StrokeThick;
 }

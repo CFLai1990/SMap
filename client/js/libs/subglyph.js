@@ -11,9 +11,68 @@
     			strokeThick: 4,
     			fanAngleRatio: 0.3,
                 colors: v_colors,
+                filterer: null,
+                filterSettings: {
+                    container: null,
+                    overallSelector: ".SubMapGrids",
+                    controlAttr: "opacity",
+                    overallFilterFunc: (v_d) => {return v_d.id != null;},
+                    getFilterFunc: () => {},
+                    animation: () => {},
+                },
     		};
     		Object.assign(this, t_init);
     	},
+
+        getRectGlyph: function(v_dimLength, [v_width, v_height], v_className, v_type){
+            class rectGlyph{
+                constructor(v_dimLength, [v_width, v_height], v_className, v_type){
+                    this.size = [v_width, v_height];
+                    this.className = v_className;
+                    this.glyphWidth = v_width * 0.8 / (v_dimLength + (v_dimLength + 1) * 0.125);
+                    this.glyphHeight = v_height * 0.8;
+                    this.glyphSize = Math.min(this.glyphWidth, this.glyphHeight);
+                    this.marginWidth = (v_width - v_dimLength * this.glyphSize) / (v_dimLength + 1);                    
+                    this.marginHeight = (v_height - this.glyphSize) / 2;
+                };
+                show(v_g, v_dims){
+                    let t_marginWidth = this.marginWidth,
+                        t_glyphSize = this.glyphSize;
+                    v_g
+                    .selectAll("." + this.className)
+                    .data(v_dims)
+                    .enter()
+                    .append("g")
+                    .attr("class", v_className)
+                    .attr("transform", (v_dim, v_i) => {
+                        return "translate(" + [(t_glyphSize + t_marginWidth) * v_i + this.marginWidth, this.marginHeight] + ")";
+                    })
+                    .each(function(v_dim){
+                        switch(v_type){
+                            case "rectangle":
+                                d3.select(this)
+                                .classed("empty", v_dim == 0)
+                                .append("rect")
+                                .attr("x", 0)
+                                .attr("y", 0)
+                                .attr("width", t_glyphSize)
+                                .attr("height", t_glyphSize);
+                            break;
+                            case "circle":
+                                let t_r = t_glyphSize / 2;
+                                d3.select(this)
+                                .classed("empty", v_dim == 0)
+                                .append("circle")
+                                .attr("cx", t_r)
+                                .attr("cy", t_r)
+                                .attr("r", t_r);
+                            break;
+                        }
+                    });
+                };
+            };
+            return new rectGlyph(v_dimLength, [v_width, v_height], v_className, v_type);
+        },
 
     	showFrames: function(vv_g, vv_path, vv_col, vv_opa){                            
             vv_g.append("path")
@@ -164,56 +223,93 @@
             });
 	    },
 
-        filterGlyphs: function(v_gs, v_dimCover, v_filter){
-            let t_return = new Array();
-            if(v_filter){
-                let t_acount = 0,
-                    t_distScale = d3.scale.ordinal(),
-                    t_col = this.colors;
-                for(let i = 0; i < v_dimCover.length; i++){
-                    if(v_dimCover[i] >= 0){
-                        t_acount ++;
-                    }
-                }
-                if(t_acount == 0){
-                    t_distScale.domain([1, 0]).range([0.2, 1]);
-                }else{                    
-                    t_distScale.domain([1, 0]).range([0.2, 1]);
-                }
-                v_gs
-                .each(function(v_grid){
-                    if(v_grid.id != null){
-                        let t_code = v_grid.code,
-                            t_fcount = 0,
-                            t_dist;
+        initializeFilter: function(v_container){
+            let t_filterer = this.filterer;
+            if(t_filterer == null){
+                this.filterSettings.container = v_container;
+                this.filterer = t_filterer = BasicView.filter(this.filterSettings);
+            }
+            let t_animateFunc = (v_d3selection, v_fit) => {
+                let t_ftOpc = v_fit?1:0.2;
+                v_d3selection
+                .attr("ftOpacity", t_ftOpc)
+                .interrupt()
+                .transition()
+                .attr("opacity", function(){
+                    let t_this = d3.select(this),
+                        t_zgOpc = parseFloat(t_this.attr("zgOpacity")),
+                        t_ptOpc = parseFloat(t_this.attr("ptOpacity"));
+                    t_zgOpc = isNaN(t_zgOpc)?1.0:t_zgOpc;
+                    t_ptOpc = isNaN(t_ptOpc)?1.0:t_ptOpc;
+                    return t_zgOpc * t_ftOpc * t_ptOpc;
+                });
+            };
+            this.filterSettings.getFilterFunc = (v_dimCover) => {
+                let t_allLimits = v_dimCover.filter((v_d) => {return v_d >=0;}),
+                    t_allCount = t_allLimits.length;
+                if(t_allCount == 0){
+                    return (v_grid) => {return true;}
+                }else{
+                    return (v_grid) => {
+                        let t_grid = v_grid[0];
+                        let t_code = t_grid.code, t_fitCount = 0, t_fit = true;
                         for(let i = 0; i < v_dimCover.length; i++){
-                            let t_dim = v_dimCover[i];
-                            if(t_dim >= 0){
-                                if(t_dim == t_code[i]){
-                                    t_fcount++;
-                                }
+                            if(v_dimCover[i] >=0 && t_code[i] == v_dimCover[i]){
+                                t_fitCount++;
                             }
                         }
-                        if(t_fcount < t_acount){
-                            t_dist = 1;
-                        }else{
-                            t_dist = 0;
-                            t_return.push(v_grid.id);
+                        if(t_fitCount < t_allCount){
+                            t_fit = false;
                         }
-                        d3.select(this)
-                        .attr("opacity", t_distScale(t_dist * t_dist));
-                    }
-                });
-            }else{
-                v_gs
-                .each(function(v_grid){
-                    if(v_grid.id != null){
-                        d3.select(this)
-                        .attr("opacity", 1.0);
-                    }
-                });
+                        return t_fit;
+                    };
+                }
+            };
+            t_filterer.animation = t_animateFunc;
+            t_filterer.init();
+        },
+
+        filterGlyphsByDims: function(v_container, v_dimCover){
+            let t_filterer = this.filterer;
+            if(t_filterer == null || !t_filterer.ready){
+                this.initializeFilter(v_container);
             }
-            return t_return;
+            let t_filterResult = this.filterer.filter("filterDims", "data", null, this.filterSettings.getFilterFunc(v_dimCover)),
+                t_returnIDs = new Array(), t_returnIndeces = new Array();
+            t_filterResult.each(function(v_grid){
+                t_returnIDs.push(v_grid.id);
+                t_returnIndeces.push(d3.select(this).attr("index"));
+            });
+            return {
+                IDs: t_returnIDs,
+                indeces: t_returnIndeces,
+            };
+        },
+
+        filterGlyphsByIDs: function(v_container, v_ids){
+            let t_filterer = this.filterer;
+            if(t_filterer == null || !t_filterer.ready){
+                this.initializeFilter(v_container);
+                t_filterer = this.filterer;
+            }
+            if(v_ids != null){
+                t_filterer.filter("filterIDs", "index", v_ids);
+            }else{
+                t_filterer.restore("filterIDs");
+            }
+        },
+
+        pickGlyphsByIDs: function(v_container, v_ids){
+            let t_filterer = this.filterer;
+            if(t_filterer == null || !t_filterer.ready){
+                this.initializeFilter(v_container);
+                t_filterer = this.filterer;
+            }
+            if(v_ids != null){
+                t_filterer.pick("pickIDs", "index", v_ids);
+            }else{
+                t_filterer.restore("pickIDs");
+            }
         },
 
         changeGlyph: function(v_gs, v_pattern, v_weights){
@@ -228,8 +324,7 @@
                         break;
                         case "fan":
                             v_gs.selectAll(".dimFan")
-                            .transition()
-                            .attr("opacity", function(){
+                            .attr("ptOpacity", function(){
                                 let t_index = d3.select(this).attr("index"),
                                     t_id, t_dim;
                                 t_index = t_index.split("_");
@@ -241,6 +336,10 @@
                                 }else{
                                     return 0 + 0.9 * Math.pow(t_weights[t_dim],3) / Math.pow(t_ext.max,3);
                                 }
+                            })
+                            .transition()
+                            .attr("opacity", function(){
+                                return d3.select(this).attr("ptOpacity");
                             });
                             v_gs.selectAll(".dimFan")
                             .select("path")
@@ -263,10 +362,10 @@
             let v_isEmpty = (v_id == null),
                 t_r = this.r;
             if(v_dims && v_dims.length){
-                this.strokeThin = 8 / v_dims.length;
+                this.strokeThin = 4 / v_dims.length;
                 this.strokeThick = 12 / v_dims.length;
             }else{
-                this.strokeThin = 1;
+                this.strokeThin = 0.5;
                 this.strokeThick = 4;
             }
             switch(this.mapType){

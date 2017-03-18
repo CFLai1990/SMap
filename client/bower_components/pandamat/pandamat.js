@@ -21,6 +21,22 @@ define([
 		//     ipdf.resolve();
 		// }, "jsonp");
 
+		let heartbeat = {
+			timeout: 15000,
+			timeoutObj: null,
+			reset: function(){
+		        clearInterval(this.timeoutObj);
+		        this.start();
+			},
+			start: function(){
+		        this.timeoutObj = setInterval(function(){
+					if(PandaMat.stream){
+						strSend(PandaMat.stream, {state: 'heartbeat'});
+			        }
+		        }, this.timeout);
+			},
+		};
+
 		function replace(v_origin, v_replace){
 			if(v_origin){
 				return v_origin;
@@ -46,6 +62,9 @@ define([
             t_stream.onopen = function(e){
             	if(v_callback){
 	            	v_callback(true);
+            	}
+            	if(PandaMat.stream){
+            		PandaMat.heartBeat.start();
             	}
             	// $.when(ipdf)
             	// .done(function(){
@@ -100,6 +119,9 @@ define([
 						errorGLB(t_d.message);
 					}
 				}
+            	if(PandaMat.stream){
+            		PandaMat.heartBeat.reset();
+            	}
 			}
 		};
 
@@ -262,6 +284,7 @@ define([
 		PandaMat.open = open;
 		PandaMat.opened = opened;
 		PandaMat.close = close;
+		PandaMat.heartBeat = heartbeat;
 
 		return (window.PandaMat = PandaMat);
 	});
