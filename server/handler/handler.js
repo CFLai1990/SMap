@@ -11,6 +11,7 @@ var fileType = {
 	"ico":"image/ico",
 	"html":"text/html",
 	"csv":"text/comma-separated-values",
+	"woff2":"application/x-font-woff",
 	"woff":"application/x-font-woff",
 	"ttf":"application/octet-stream",
 	"bmp":"application/x-MS-bmp",

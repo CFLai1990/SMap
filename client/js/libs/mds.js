@@ -93,8 +93,13 @@
 		var td=dim(s), n = td[0], d = td[1];
 
 		var t_svd, t_e, t_v, tt_e = [];
-		t_svd = svd(s);//n >= d
-		t_v = trans(t_svd.V);
+		if(n >= d){
+			t_svd = svd(s);//n >= d
+			t_v = trans(t_svd.V);
+		}else{
+			t_svd = svd(trans(s));
+			t_v = trans(t_svd.U);
+		}
 		t_e = t_svd.S;
 		t_e = mul(t_e, t_e);
 		t_e.forEach(function(tt_d){

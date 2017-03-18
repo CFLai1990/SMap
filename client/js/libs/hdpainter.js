@@ -47,8 +47,12 @@
 					                    });
 					                    return t_text;
 					                })
-					                .attr("data-placement", "bottom")
-					                .on("mouseover", function(){
+					                .attr("data-placement", "bottom");
+					                $(t_g[0]).tooltip({
+					                    container: t_this.tooltipContainer,
+					                    trigger: "manual",
+					                });
+					                t_g.on("mouseover", function(){
 					                    clearTimeout(t_timer);
 					                    t_timer = setTimeout(() => {
 					                        $(this).tooltip("show");
@@ -59,10 +63,6 @@
 					                    t_this.hover.timer = null;
 					                    $(this).tooltip("hide");
 					                });
-				                $(t_g[0]).tooltip({
-				                    container: t_this.tooltipContainer,
-				                    trigger: "manual",
-				                });
 				                return this;
 		        			},
 			        		drawPoints: function(v_projection){
@@ -84,7 +84,8 @@
 				                .append("circle")
 				                .attr("cx", 0)
 				                .attr("cy", 0)
-				                .attr("r", t_this.pointSize);
+				                .attr("r", t_this.pointSize)
+				                .attr("fill", "#ccc");
 				                return this.showData();
 				    		},
 				    		movePoints: function(v_projection){

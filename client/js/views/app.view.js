@@ -7,12 +7,14 @@ define([
     'underscore',
     'jquery',
     'backbone',
+    'spin',
     'datacenter',
     'config',
     'SubMap_LayoutView',
+    'SubList_LayoutView',
     'Projection_LayoutView',
     'text!templates/app.tpl'
-], function(require, Mn, _, $, Backbone, Datacenter, Config, SubMap_LayoutView, Projection_LayoutView,
+], function(require, Mn, _, $, Backbone, Spin, Datacenter, Config, SubMap_LayoutView, SubList_LayoutView, Projection_LayoutView,
             Tpl) {
     'use strict';
 
@@ -29,6 +31,7 @@ define([
         regions:{
             'submap': '#leftTop',
             'projection': '#rightBottom',
+            'sublist': '#sideColumn',
         },
 
         initialize: function (options) {
@@ -49,6 +52,8 @@ define([
             self.showChildView("submap", self.submap);
             self.projection = new Projection_LayoutView();
             self.showChildView("projection", self.projection);
+            self.sublist = new SubList_LayoutView();
+            self.showChildView("sublist", self.sublist);
             console.info("LayoutView: child views ready!");
             if(!self.ready){
                 self.ready = true;
@@ -77,6 +82,8 @@ define([
                 Config.set("currentData", t_id);
                 Datacenter.loadData(t_path);
             });
+            // d3.select("body")
+            // .append("div")
         },
 
         getLayoutParameters: function(){
@@ -86,12 +93,22 @@ define([
             t_ly.globalWidth = innerWidth;
             t_ly.globalTop = t_navTop;
             t_ly.globalMargin = t_ly.globalWidth * t_ly.marginRatio;
+            //Side Column View
+            var t_sideWidth = t_ly.globalWidth * t_ly.sideWidthRatio;
+            var t_sideHeight = (t_ly.globalHeight - t_ly.globalTop) * t_ly.sideHeightRatio;
+            t_ly.sideClm = {
+                top: t_ly.globalTop,
+                left: t_ly.globalMargin,
+                width: t_sideWidth,
+                height: t_sideHeight,
+            };
+            this.updateView("#sideColumn",t_ly.sideClm)
             //Left Top View
             var t_leftWidth = t_ly.globalWidth * t_ly.leftWidthRatio;
             var t_leftTopHeight = (t_ly.globalHeight - t_ly.globalTop) * t_ly.leftTopHeightRatio;
             t_ly.leftTop = {
                 top: t_ly.globalTop,
-                left: t_ly.globalMargin,
+                left: t_ly.globalMargin * 3 + t_sideWidth,
                 width: t_leftWidth,
                 height: t_leftTopHeight,
                 };
@@ -102,7 +119,7 @@ define([
             var t_leftBtmHeight = (t_ly.globalHeight - t_ly.globalTop) * (1 - t_ly.leftMidHeightRatio) - t_leftMidHeight - t_leftTopHeight;
             t_ly.leftBtm = {
                 top: t_ly.globalTop + t_leftTopHeight + t_leftMidHeight,
-                left: t_ly.globalMargin,
+                left: t_ly.globalMargin * 3 + t_sideWidth,
                 width: t_leftWidth,
                 height: t_leftBtmHeight,
                 };
@@ -112,7 +129,7 @@ define([
             var t_rightTopHeight = (t_ly.globalHeight - t_ly.globalTop) * t_ly.rightTopHeightRatio;
             t_ly.rightTop = {
                 top: t_ly.globalTop,
-                left: t_leftWidth + t_ly.globalMargin * 2,
+                left: t_ly.globalMargin * 5 + t_leftWidth + t_sideWidth,
                 width: t_rightWidth,
                 height: t_rightTopHeight,
             };
@@ -123,7 +140,7 @@ define([
             var t_rightBtmHeight = (t_ly.globalHeight - t_ly.globalTop) * t_ly.rightBtmHeightRatio;
             t_ly.rightBtm = {
                 top: t_ly.globalTop + t_rightTopHeight + t_rightMidHeight,
-                left: t_leftWidth + t_ly.globalMargin * 2,
+                left: t_ly.globalMargin * 5 + t_leftWidth + t_sideWidth,
                 width: t_rightWidth,
                 height: t_rightBtmHeight,
             };

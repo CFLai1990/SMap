@@ -43,7 +43,7 @@ define([
                     var t_r = Math.random();
                     if(t_r<0.08)
                         t_data.push(t_d);
-                })
+                });
                 this.data = t_data;
             }
             var self = this, t_array = [];
@@ -114,6 +114,10 @@ define([
         //     Config.set("clusterNumber", tt_clusters.length);
         //     return tt_clusters;
         // },
+
+        temp_handle_mc1: function(){
+
+        },
     });
     return data;
 });

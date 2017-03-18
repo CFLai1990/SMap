@@ -29,23 +29,27 @@ define([
             },
             'dataPath': 'data/Iris.csv',//Iris.csv, Car.csv, 3DBall.csv, 2DPlanes.csv, swissroll.csv
             'currentData': 'Iris',
+            'realTimeCompute': false,
             'distType': "KNN",//"KNN", "Matrix"
             'glyphType': "fan",//"fill", "fan", "stick"
             'gridType': "hexagon",
             'mapType': "cell",//"diff", "cell"
+            'listType': "rectangle",//"rectangle", "circle"
             'centerColor': [1,0.1,0.4],
-            'sampleCount': 400,
+            'sampleCount': 256,
             'gridScaling': 3,
             'gridNumber': 16,
             'dimRange': [2, Infinity],
             'KNN_K': 6,
             'SUB_K': 6,
             'KNNGDistWeight': 1.0,
-            'KNN_Precision': 'precise',
+            'KNN_Precision': 'precise',//'precise', 'approximate'
             'TOPIC_N': 4,
             'cluster': null,
             'clusterNumber': null,
+            'clusterLevels': 3,
             'clusterColors': null,
+            'clusterDistMat': 'projection',//'projection','original'
             'colorInPicker': null,
             'colorPickerLeft': null,
             'changeColorID': null,
@@ -71,14 +75,17 @@ define([
             'subspaceAll': [],
             'subspace': [],
             'subThreshold': 0.75,
+            'drawSize': 340,
             'layout': {
                 globalHeight: null,
                 globalWidth: null,
                 globalTop: null,
                 globalMargin: null,
-                leftWidthRatio: 0.49,
-                rightWidthRatio: 0.49,
-                marginRatio: 0.006,
+                sideWidthRatio: 0.20,
+                sideHeightRatio: 0.98,
+                leftWidthRatio: 0.40,
+                rightWidthRatio: 0.37,
+                marginRatio: 0.005,
                 leftTopHeightRatio: 0.98,
                 leftBtmHeightRatio: 0.00,
                 leftMidHeightRatio: 0.00,
@@ -120,7 +127,8 @@ define([
             },
             'transition': {
                 duration: 500,
-                quick: 200,
+                long: 2000,
+                short: 400,
                 interval: 50,
             },
         },

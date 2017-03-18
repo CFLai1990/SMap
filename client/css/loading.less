@@ -1,0 +1,76 @@
+.loading {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    -webkit-transition: @myTransition;
+    transition: @myTransition;
+}
+
+.loading .back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: @FillDark;
+    opacity: 0.9;
+    -webkit-transition: @myTransition;
+    transition: @myTransition;
+}
+
+.loading .logo {
+    position: relative;
+    font-size: 12px;
+    font-size: 1.0vw;
+    width: 30vw;
+    text-align: center;
+    vertical-align: middle;
+    align-self:center;
+    color: @FillWhite;
+    -webkit-transition: @myTransition;
+    transition: @myTransition;
+}
+
+.loading .logo i{
+    padding: 10px;
+}
+
+.loading .logo span{
+    font-size: larger;
+    padding-right: 10px;
+}
+
+.loading .progressBar{
+	position: relative;
+    text-align: center;
+    position: relative;
+    width:100%;
+    height:100%;
+    border: 4px solid @FillDeep;
+    border-radius: 16px;
+    min-height:20px;
+}
+
+
+.loading .progressBefore{
+	position: absolute;
+	height:100%;
+	width:0%;
+	background-color: @FillDeep;
+    border-radius: 1px;
+}
+
+.loading .progressVal{
+    position:relative;
+    top:0%;
+    vertical-align: middle;
+}
+
+
+#root{
+    position: absolute;
+    left:10%;
+    width:40%;
+    height:30%;
+    top:20%;
+}

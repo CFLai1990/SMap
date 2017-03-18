@@ -1,0 +1,186 @@
+#SubList_View svg{
+	border: none !important;
+	border-radius: 0px !important;
+}
+
+.SubListItems{
+    overflow: auto;
+	position: relative;
+}
+
+.SubListItemGlyph rect, .SubListItemGlyph circle{
+	fill: @FillDark;
+	stroke: none;
+}
+
+.SubListItemGlyph.empty rect, .SubListItemGlyph.empty circle{
+	fill: @FillWhite;
+	stroke: none;
+}
+
+.SubListItem{
+	font-size: 0px;
+}
+
+.SubListItem svg{
+	top: 0%;
+	position: relative;
+	cursor: pointer;
+	overflow: visible;
+}
+
+.SubListItemForeground{
+	stroke: none;
+	fill: rgba(0,0,0,0);
+	-webkit-transition: @myTransition;
+	transition: @myTransition;
+}
+
+.SubListItemBackground{
+	stroke: none;
+	fill-opacity: 0.4;
+	-webkit-transition: @myTransition;
+	transition: @myTransition;
+}
+
+
+.SubListItem svg.chosen .SubListItemBackground,
+.SubListItem.pinned .SubListItemBackground{
+	stroke: #000;
+	stroke-width: 2px;
+	-webkit-transition: @myTransition;
+	transition: @myTransition;
+}
+
+.SubListDims{
+	font-size: 10px;
+	cursor: pointer;
+	-webkit-transition: @myTransition;
+	transition: @myTransition;
+}
+
+.SubListDims.locked{
+	cursor: auto;
+}
+
+.filterBtn.on{
+	fill: @FillDark;
+	stroke: @FillDark;
+	stroke-width: @StrokeThin;
+	-webkit-transition: @myTransition;
+	transition: @myTransition;
+}
+
+.filterBtn.on.active{
+	stroke-width: @StrokeThick;
+	-webkit-transition: @myTransition;
+	transition: @myTransition;
+}
+
+.filterBtn.off{
+	fill: @FillWhite;
+	stroke: @FillMedian;
+	stroke-width: @StrokeThin;
+	-webkit-transition: @myTransition;
+	transition: @myTransition;
+}
+
+.filterBtn.off.active{
+	stroke: @FillDark;
+	stroke-width: @StrokeThick;
+	-webkit-transition: @myTransition;
+	transition: @myTransition;
+}
+
+.filterBtn.active{
+	stroke: @FillDark;
+	stroke-width: @StrokeThick;
+	-webkit-transition: @myTransition;
+	transition: @myTransition;
+}
+
+.filterBtnFramework{
+	fill: none;
+	// stroke: @FillMedian;
+	// stroke-width: @StrokeThin;
+	cursor: pointer;
+}
+
+.filterBtnFramework.active{
+	// stroke: @FillDeep;
+}
+
+.locked .filterBtnFramework{
+	fill: @FillMedian;
+	cursor: auto;
+	-webkit-transition: @myTransition;
+	transition: @myTransition;
+}
+
+.SubListDimLock{
+	color: @FillMedian;
+	cursor: pointer;
+	-webkit-transition: @myTransition;
+	transition: @myTransition;
+}
+
+.SubListDimLock:hover{
+	color: @FillWhite;
+	-webkit-transition: @myTransition;
+	transition: @myTransition;
+}
+
+.SubListHistogram rect{
+	fill: @FillDeeper;
+}
+
+.iconFontello{
+  font-family: "fontello";
+  font-style: normal;
+  font-weight: normal;
+  speak: none;
+ 
+  display: inline-block;
+  text-decoration: inherit;
+  width: 1em;
+  margin-right: .2em;
+  text-align: center;
+  /* opacity: .8; */
+ 
+  /* For safety - reset parent styles, that can break glyph codes*/
+  font-variant: normal;
+  text-transform: none;
+ 
+  /* fix buttons height, for twitter bootstrap */
+  line-height: 1em;
+ 
+  /* Animation center compensation - margins should be symmetric */
+  /* remove if not needed */
+  margin-left: .2em;
+ 
+  /* you can be more comfortable with increased icons size */
+  /* font-size: 120%; */
+ 
+  /* Font smoothing. That was taken from TWBS */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+ 
+  /* Uncomment for 3D effect */
+  /* text-shadow: 1px 1px 1px rgba(127, 127, 127, 0.3); */
+}
+
+.SubListTool, .SubListTool span{
+	cursor: pointer;
+	float: left;
+	text-align: center;
+}
+
+.SubListToolbar{
+	font-size: large;
+	background: @FillDeeper;
+	border-radius: 4px;
+}
+
+.SubListFilters svg{
+	overflow: visible;
+}

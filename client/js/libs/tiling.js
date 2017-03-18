@@ -5,6 +5,10 @@
     	scoreDirection: "min",
     	scoreDataWeight: [0.95, 0.05],
 
+        getDist: function(v_a, v_b){
+            return Math.sqrt(Math.pow(v_a[0] - v_b[0], 2) + Math.pow(v_a[1] - v_b[1], 2));
+        },
+
         mapToArray: function(v_map, v_type = "values"){
             let t_iter;
             switch(v_type){
@@ -216,7 +220,9 @@
                    	neighbors: new Map(),
                    	availableNeighbors: new Map(),
                 };
-        	}, getGridNum = function(){
+        	}, getGridType = function(){
+                return v_gridType;
+            }, getGridNum = function(){
 	            let t_num = Math.round(v_pointNum * v_factor),
 	                t_gridNum = null;
 	                switch(v_gridType){
@@ -307,6 +313,8 @@
             t_grids.gridNum = t_gridNum;
             t_grids.radius = (2 * t_gridNum - 1);
             t_grids.waitingList = new Map();
+            t_grids.getRadius = () => {return getRadius(getGridNum());};
+            t_grids.getGridType = getGridType;
             t_grids.getCenter = function(){
             	let tt_cords = [];
             	switch(v_gridType){
@@ -406,6 +414,127 @@
                 }
             };
             return t_grids;
+        },
+
+        getEdges: function(v_returnGrids){
+            let edgeObj = function(v_start, v_end){
+                let t_compare = function(v_start, v_end, v_compareFunc){
+                    if(v_start == null || v_end == null
+                    || v_start[0] == null || v_end[0] == null
+                    || v_start[1] == null || v_end[1] == null){
+                        return false;
+                    }
+                    let t_ss = Math.sqrt(Math.pow(this.start[0] - v_start[0], 2) + Math.pow(this.start[1] - v_start[1], 2)),
+                        t_ee = Math.sqrt(Math.pow(this.end[0] - v_end[0], 2) + Math.pow(this.end[1] - v_end[1], 2)),
+                        t_se = Math.sqrt(Math.pow(this.start[0] - v_end[0], 2) + Math.pow(this.start[1] - v_end[1], 2)),
+                        t_es = Math.sqrt(Math.pow(this.end[0] - v_start[0], 2) + Math.pow(this.end[1] - v_start[1], 2));
+                    return (v_compareFunc([t_ss, t_ee], [t_se, t_es]));
+                },  t_same = function(v_edge){
+                    let t_tolerance = Number.EPSILON * 100;
+                    return this.compare(v_edge.start, v_edge.end, ([v_ss, v_ee], [v_se, v_es]) => {
+                        return (v_ss < t_tolerance && v_ee < t_tolerance) || (v_se < t_tolerance && v_es < t_tolerance);
+                    });
+                }, t_connect = function(v_edge){
+                    let t_tolerance = Number.EPSILON * 100;
+                    return this.compare(v_edge.start, v_edge.end, ([v_ss, v_ee], [v_se, v_es]) => {
+                        let t_connectPath = new Array();
+                        if(v_ss < t_tolerance){
+                            return [this.end, this.start, v_edge.end];
+                        }
+                        if(v_es < t_tolerance){
+                            return [this.start, this.end, v_edge.end];
+                        }
+                        if(v_ee < t_tolerance){
+                            return [this.start, this.end, v_edge.start];
+                        }
+                        if(v_se < t_tolerance){
+                            return [this.end, this.start, v_edge.start];
+                        }
+                        return false;
+                    });
+                };
+                return {
+                    start: v_start,
+                    end: v_end,
+                    nghboring: new Array(2),
+                    sameTo: t_same,
+                    connectTo: t_connect,
+                    compare: t_compare,
+                };
+            };
+            let t_type = v_returnGrids.getGridType(),
+                t_radius = v_returnGrids.getRadius() * 2 * Math.sqrt(3) / 3,
+                t_returnEdges = new Array();
+            for(let i = 0; i < v_returnGrids.length; i++){
+                let t_gridRow = v_returnGrids[i];
+                for(let j = 0; j < t_gridRow.length; j++){
+                    let t_grid = v_returnGrids[i][j],
+                        t_pos = t_grid.pos,
+                        t_gCords = [i, j],
+                        t_gEdges = new Array(),
+                        t_gEdgeIDs = new Array(),
+                        t_cleanGEdges = new Array(),
+                        t_num_edges, t_initAngle;
+                    switch(t_type){
+                        case "hexagon":
+                            t_num_edges = 6;
+                            t_initAngle = 1 / 12;
+                        break;
+                        default:
+                            t_num_edges = 6;
+                            t_initAngle = 1 / 12;
+                        break;
+                    }
+                    for(let k = 0; k < t_num_edges; k++){
+                        let t_startAngle = (t_initAngle + k / t_num_edges) * 2 * Math.PI,
+                            t_endAngle = (t_initAngle + (k + 1) / t_num_edges) * 2 * Math.PI,
+                            t_start = [t_pos[0] + Math.cos(t_startAngle) * t_radius,
+                                t_pos[1] + Math.sin(t_startAngle) * t_radius],
+                            t_end = [t_pos[0] + Math.cos(t_endAngle) * t_radius,
+                                t_pos[1] + Math.sin(t_endAngle) * t_radius];
+                        t_gEdges.push(edgeObj(t_start, t_end));
+                        t_cleanGEdges.push({
+                            state: true,
+                            id: null,
+                        });
+                    }
+                    let t_nghIt = t_grid.gridNeighbors.values(),
+                        t_nghCords = t_nghIt.next();
+                    while(!t_nghCords.done){
+                        let t_nCords = t_nghCords.value,
+                            t_nghGrid = v_returnGrids[t_nCords[0]][t_nCords[1]],
+                            t_nEdgeIDs = t_nghGrid.edges;
+                        if(t_nEdgeIDs != null){
+                            for(let p = 0; p < t_nEdgeIDs.length; p++){
+                                let tt_edge = t_returnEdges[t_nEdgeIDs[p]];
+                                for(let q = 0; q < t_gEdges.length; q++){
+                                    if(!t_cleanGEdges[q].state){
+                                        continue;
+                                    }
+                                    if(tt_edge.sameTo(t_gEdges[q])){
+                                        t_cleanGEdges[q].state = false;
+                                        t_cleanGEdges[q].id = t_nEdgeIDs[p];
+                                    }
+                                }
+                            }
+                        }
+                        t_nghCords = t_nghIt.next();
+                    }
+                    for(let q = 0; q < t_cleanGEdges.length; q++){
+                        if(t_cleanGEdges[q].state){
+                            t_gEdges[q].nghboring[0] = t_gCords.join("_");
+                            t_returnEdges.push(t_gEdges[q]);
+                            t_gEdgeIDs.push(t_returnEdges.length - 1);
+                        }else{
+                            let tt_id = t_cleanGEdges[q].id;
+                            t_gEdgeIDs.push(tt_id);
+                            t_returnEdges[tt_id].nghboring[1] = t_gCords.join("_");
+                        }
+                    }
+                    v_returnGrids[i][j].edges = t_gEdgeIDs;
+                }
+            }
+            return t_returnEdges;
         },
 
         getCodes: function(v_codeBook){
@@ -650,9 +779,6 @@
 	                }
         		}else{//统一准则
                 	t_waitingGrids = getUnionList(v_gridList);
-                    // if(vv_code == "0111"){
-                    //     console.log(t_neighbors);
-                    // }
                     let tt_code = v_codes.getCode(v_pID);
 	                t_neighbors.forEach(vv_nghEntry => {
 	                	let tt_ind = vv_nghEntry[0],
@@ -686,22 +812,46 @@
                 v_grids.clearScores();
                 return t_finalCords;
             }, packResults = () => {
-            	let t_return = new Array(v_grids.length);
+            	let t_returnGrids = new Array(v_grids.length),
+                    t_dictionary = new Map();
             	v_grids.forEach((v_row, v_i) =>{
-            		let t_row = v_row.map(v_ele => {
+            		let t_row = v_row.map((v_ele, v_j) => {
+                        if(v_ele.pIndex != null){
+                            t_dictionary.set(v_codes.dictionary[v_ele.pIndex].join(""), v_i + "_" + v_j);
+                        }
             			return {
             				id: v_ele.pIndex,
             				pos: v_ele.pos,
             				gridNeighbors: v_ele.neighbors,
                             dataNeighbors: (v_ele.pIndex == null)?null:(this.mapToArray(v_points[v_ele.pIndex].neighbors, "keys")),
                             code: (v_ele.pIndex == null)?null:(v_codes.dictionary[v_ele.pIndex]),
+                            edges: null,
             			}
             		});
-            		t_return[v_i] = t_row;
+            		t_returnGrids[v_i] = t_row;
             	});
-            	t_return.radius = v_grids.radius;
-                t_return.getCenterPID = function(){ return v_grids.getCenterPID();};
-            	return t_return;
+            	t_returnGrids.radius = v_grids.radius;
+                t_returnGrids.dictionary = t_dictionary;
+                t_returnGrids.getCenterPID = function(){ return v_grids.getCenterPID();};
+                t_returnGrids.getRadius = function(){ return v_grids.getRadius();};
+                t_returnGrids.getGridType = function(){ return v_grids.getGridType();};
+                t_returnGrids.findGridByCode = function(vv_codes){
+                    return this.dictionary.get(vv_codes).split("_");
+                }
+                t_returnGrids.findGridByID = function(vv_ind){
+                    try{
+                    let t_codes = v_codes.dictionary[vv_ind].join("");
+                    return this.dictionary.get(t_codes).split("_");
+                    }catch(e){
+                        console.log(v_codes.dictionary, vv_ind);
+                        console.log(v_codes.dictionary[vv_ind]);
+                    }
+                }
+                let t_returnEdges = this.getEdges(t_returnGrids);
+            	return {
+                    grids: t_returnGrids,
+                    edges: t_returnEdges,
+                };
             };
             let t_gridNum = v_grids.gridNum,
             	t_centerPoint = v_points.getCenter(),
@@ -721,6 +871,108 @@
             }else{
             	return packResults();
             }
+        },
+
+        getGridClusters: function(v_map, v_clusters){
+            let t_this = this,
+                t_grids = v_map.grids,
+                t_edges = v_map.edges;
+            let t_getPathFromEdges = function(v_edges){
+                    let t_inds = new Array(),
+                        t_returnPaths = new Array();
+                    for(let i = 0; i < v_edges.length; i++){
+                        t_inds.push(i);
+                    }
+                    let t_currentEdge = v_edges[t_inds[0]],
+                        t_newPath = true,
+                        t_currentPath = 0;
+                    t_inds.splice(0, 1);
+                    t_returnPaths.push([]);
+                    while(t_inds.length > 0){
+                        let t_found = false;
+                        for(let i = 0; i < t_inds.length; i++){
+                            let t_connectPath = t_currentEdge.connectTo(v_edges[t_inds[i]]);
+                            if(t_connectPath != false && t_connectPath != null){
+                                if(t_newPath){
+                                    t_newPath = false;
+                                    t_returnPaths[t_currentPath].push(...t_connectPath);
+                                }else{
+                                    t_returnPaths[t_currentPath].push(t_connectPath[2]);
+                                }
+                                t_currentEdge = v_edges[t_inds[i]];
+                                t_inds.splice(i, 1);
+                                t_found = true;
+                                break;
+                            }
+                        }
+                        if(!t_found){
+                            t_currentEdge = v_edges[t_inds[0]];
+                            t_inds.splice(0, 1);
+                            t_returnPaths.push([]);
+                            t_newPath = true;
+                            t_currentPath++;
+                        }
+                    }
+                    for(let i = 0; i < t_returnPaths.length; i++){
+                        t_returnPaths[i].push(t_returnPaths[i][0]);
+                    }
+                    return t_returnPaths;
+                },
+                t_getGridClsPath = function(v_clusterGrids, v_grids, v_edges){
+                    let t_allEdges = new Array(),
+                        t_cleanEdgeIDs = new Set(),
+                        t_clusterGrids = new Array();
+                    for(let i = 0; i < v_clusterGrids.length; i++){
+                        let t_gridCords = v_clusterGrids[i],
+                            t_grid = v_grids[t_gridCords[0]][t_gridCords[1]],
+                            t_edgeIDs = t_grid.edges;
+                        t_allEdges.push(t_edgeIDs);
+                        t_clusterGrids.push(t_gridCords.join("_"));
+                    }
+                    for(let i = 0; i < t_allEdges.length; i++){
+                        let t_cords = t_clusterGrids[i];
+                        for(let j = 0; j < t_allEdges[i].length; j++){
+                            let t_eid = t_allEdges[i][j],
+                                t_edge = v_edges[t_eid],
+                                t_nghGrids = t_edge.nghboring,
+                                t_another = (t_nghGrids[0] == t_cords)?1:0,
+                                t_clean = true;
+                            t_another = t_nghGrids[t_another];
+                            if(t_another != null && t_clusterGrids.indexOf(t_another) >= 0){
+                                t_clean = false;
+                            }
+                            if(t_clean){
+                                t_cleanEdgeIDs.add(t_eid);
+                            }
+                        }
+                    }
+                    let t_cleanEdges = new Array(),
+                        t_cleanBlockEdges = new Array(),
+                        t_cleanBlock = new Array(),
+                        t_cleanEidIt = t_cleanEdgeIDs.values(),
+                        t_cleanID = t_cleanEidIt.next();
+                    while(!t_cleanID.done){
+                        let t_edge = v_edges[t_cleanID.value];
+                        t_cleanBlockEdges.push(v_edges[t_cleanID.value]);
+                        t_cleanEdges.push([t_edge.start, t_edge.end]);
+                        t_cleanID = t_cleanEidIt.next();
+                    }
+                    t_cleanBlock = t_getPathFromEdges(t_cleanBlockEdges);
+                    return {
+                        paths: t_cleanBlock,
+                        lines: t_cleanEdges,
+                    };
+                };
+            let t_clusterPaths = new Array();
+            for(let i = 0; i < v_clusters.length; i++){
+                let t_cluster = v_clusters[i],
+                    t_clsGrids = new Array();
+                for(let j = 0; j < t_cluster.length; j++){
+                    t_clsGrids.push(t_grids.findGridByID(t_cluster[j]));
+                }
+                t_clusterPaths[i] = t_getGridClsPath(t_clsGrids, t_grids, t_edges);
+            }
+            return t_clusterPaths;
         },
 
         getMap: function(v_nghList, v_distMat, v_codeBook, v_gridType = "hexagon", v_factor = 1.2){

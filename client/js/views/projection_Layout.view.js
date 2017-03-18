@@ -40,11 +40,11 @@ define([
             var self = this;
             self.width = self.$el.width();
             self.height = self.$el.height();
-                        var t_layout = {
-                           width: this.width,
-                         height: this.height,
-                      };
-                      _.extend(Config.get("childviewLayout"), t_layout);
+            var t_layout = {
+                width: this.width,
+                height: this.height,
+            };
+            _.extend(Config.get("childviewLayout"), t_layout);
             self.showChildView('Projection_CollectionView', new Projection_CollectionView({collection: Datacenter.Projection_Collection}));
         },
 
