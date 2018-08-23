@@ -1,52 +1,54 @@
 define([
-    'require',
-    'marionette',
-    'underscore',
-    'jquery',
-    'backbone',
-    'd3',
-    'Base',
-    'Projection_CollectionView',
-    'datacenter',
-    'text!templates/projection_Layout.tpl'
-], function(require, Mn, _, $, Backbone, d3, Base, Projection_CollectionView, Datacenter, Tpl){
-    'use strict';
-    return Mn.LayoutView.extend(_.extend({
+  'require',
+  'marionette',
+  'underscore',
+  'jquery',
+  'backbone',
+  'd3',
+  'Base',
+  'Projection_CollectionView',
+  'datacenter',
+  'text!templates/projection_Layout.tpl'
+], function (require, Mn, _, $, Backbone, d3, Base, Projection_CollectionView, Datacenter, Tpl) {
+  'use strict'
+  return Mn.LayoutView.extend(_.extend({
 
-        tagName:'svg',
+    tagName: 'svg',
 
-        template: _.template(Tpl),
+    template: _.template(Tpl),
 
-        regions:{
-            'Projection_CollectionView':'#Projection_CollectionView',
-        },
+    regions: {
+      'Projection_CollectionView': '#Projection_CollectionView'
+    },
 
-        attributes:{
-            'id':'Projection_CollectionViewSVG',
-            'width': '100%',
-            'height': '100%',
-        },
+    attributes: {
+      'id': 'Projection_CollectionViewSVG',
+      'width': '100%',
+      'height': '100%',
+      'viewBox': '0 0 680 680',
+      'preserveAspectRatio': 'xMidYMid meet'
+    },
 
-        initialize: function(){
-            var self = this;
-            var t_defaults = {
-                width: null,
-                height: null,
-            };
-            _.extend(this, t_defaults);
-        },
+    initialize: function () {
+      var self = this
+      var t_defaults = {
+        width: null,
+        height: null
+      }
+      _.extend(this, t_defaults)
+    },
 
-        onShow: function(){
-            var self = this;
-            self.width = self.$el.width();
-            self.height = self.$el.height();
-            var t_layout = {
-                width: this.width,
-                height: this.height,
-            };
-            _.extend(Config.get("childviewLayout"), t_layout);
-            self.showChildView('Projection_CollectionView', new Projection_CollectionView({collection: Datacenter.Projection_Collection}));
-        },
+    onShow: function () {
+      var self = this
+      self.width = self.$el.width()
+      self.height = self.$el.height()
+      var t_layout = {
+        width: this.width,
+        height: this.height
+      }
+      _.extend(Config.get('childviewLayout'), t_layout)
+      self.showChildView('Projection_CollectionView', new Projection_CollectionView({collection: Datacenter.Projection_Collection}))
+    }
 
-    }, Base));
-});
+  }, Base))
+})

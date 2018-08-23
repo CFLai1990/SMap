@@ -3,19 +3,19 @@
  * model for interaction
  */
 define([
-    'require',
-    'marionette',
-    'underscore',
-    'jquery',
-    'backbone',
+  'require',
+  'marionette',
+  'underscore',
+  'jquery',
+  'backbone',
 ], function(require, Mn, _, $, Backbone) {
-    'use strict';
+  'use strict';
 
-    return window.Variables = new (Backbone.Model.extend({
-        defaults: {
-            "Var1":1,
-        },
+  return window.Variables = new(Backbone.Model.extend({
+    defaults: {
+      "Var1": 1,
+    },
 
 
-    }))();
+  }))();
 });
