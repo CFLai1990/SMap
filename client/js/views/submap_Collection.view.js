@@ -2165,6 +2165,7 @@ define([
           let t_startAngle = -v_divAngle,
             t_endAngle = (-1 + v_portion * 2) * v_divAngle,
             t_arc = d3.svg.arc()
+
                             .innerRadius(v_radius[0])
                             .outerRadius(v_radius[1])
                             .startAngle(t_startAngle)
