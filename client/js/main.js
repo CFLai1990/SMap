@@ -58,11 +58,13 @@ require.config({
     'basicFunctions': 'libs/basicFunctions',
     'basicViewOperations': 'libs/basicViewOperations',
     'Tiling': 'libs/tiling',
+    'Tiling_v1': 'libs/tiling_v1',
     'SubGlyph': 'libs/subglyph',
     'SubRotate': 'libs/subrotate',
     'HDPainter': 'libs/hdpainter',
     'PDHist': 'libs/pandaHist',
     'backbone.routefilter': '../bower_components/backbone.routefilter/dist/backbone.routefilter.min',
+    'exportClassFromAMD': '../bower_components/exportClassFromAMD/index',
         // templates path
     'templates': '../templates',
         // controls
@@ -84,12 +86,14 @@ require.config({
     'Base': 'views/base.view',
     'AppView': 'views/app.view',
     'SubMap_LayoutView': 'views/submap_Layout.view',
-    'SubMap_CollectionView': 'views/submap_Collection.view',
+/*    'SubMap_CollectionView': 'views/submap_Collection.view', */
+    'SubMap_CollectionView': 'views/submap_Collection_v0.1.view',
     'SubMap_ModelView': 'views/submap_Model.view',
     'SubList_LayoutView': 'views/sublist_Layout.view',
     'SubList_CollectionView': 'views/sublist_Collection.view',
     'Projection_LayoutView': 'views/projection_Layout.view',
-    'Projection_CollectionView': 'views/projection_Collection.view'
+/*    'Projection_CollectionView': 'views/projection_Collection.view' */
+    'Projection_CollectionView': 'views/projection_Collection_v0.1.view'
   }
 })
 

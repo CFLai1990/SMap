@@ -600,6 +600,7 @@ define([
       this.setStage('SubTree')
       this.trigger('SubMapCollection__Panda', {
       }, 'subTree = GetSubtree(subClusters, subCodes, subKNNDistr, subNghList)', v_tree => {
+        console.log(v_tree)
         this.subTree = v_tree
         this.subTree.findByIndex = function (v_clsIDs) {
           if (v_clsIDs == null) {
