@@ -1,8 +1,10 @@
 define([
-  './HierarchicalTiling'
-], function (HierarchicalTiling) {
+  './HierarchicalTiling',
+  './SubmapLayout'
+], function (HierarchicalTiling, SubmapLayout) {
   let Layout = {
-    hierarchical: HierarchicalTiling
+    hierarchical: HierarchicalTiling,
+    submap: SubmapLayout
   }
   return Layout
 })

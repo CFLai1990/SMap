@@ -3,7 +3,7 @@ define([
   'exportClassFromAMD'
 ], function (GeoElements, ExportClass) {
   class Hexagon {
-    // constructor: [i, j], 'string', float
+        // constructor: [i, j], 'string', float
     constructor (externalID, radius, integerPosition) {
       this.type = 'hexagon'
       this.ID = externalID
@@ -17,19 +17,16 @@ define([
       this.vertexes = this.getVertexes()
     } // end of constructor of Hexagon
 
-    // get the coordinates of the center
+        // get the coordinates of the center
     getCenterCoordinates () {
       let intPos = this.position
-      return [
-        (intPos.j % 2 === 0) ? (2 * this.radius * intPos.i) : ((2 - 1 / Math.abs(intPos.i)) * this.radius * intPos.i),
-        Math.sqrt(3) * this.radius * intPos.j
-      ]
+      return this.getCoordinatesByPosition(this.radius, [intPos.i, intPos.j])
     } // end of getCenterCoordinates
 
-    // get the positions of its neighbors
+        // get the positions of its neighbors
     getNeighborsInPosition () {
       let neighbors = new Map() // map: direction in degree (key) - position (value)
-      let intPos = this.center.integerPosition
+      let intPos = this.position
       let x0, x1, x2, x3
       if (intPos.j % 2 === 0) {
         x0 = 1
@@ -51,7 +48,7 @@ define([
       return neighbors
     } // end of getNeighborsInPosition
 
-    // get the vertexes of the hexagon
+        // get the vertexes of the hexagon
     getVertexes () {
       let vertexes = new Map() // map: direction in degree (key) - Point (value)
       let newPoint = GeoElements.Point
@@ -64,6 +61,29 @@ define([
       }
       return vertexes
     } // end of getVertexes
+
+        // find the position of a point by its coordinates
+    getPositionByCoordinates (radius, coordinates) {
+      let j = Math.round(coordinates[1] * Math.sqrt(3) / (3 * radius))
+      let i = coordinates[0] / (2 * radius)
+      if (j % 2 !== 0) {
+        i = Math.round(coordinates[0] / (2 * radius))
+      } else {
+        if (i > 0) {
+          i = Math.round(i + 0.5)
+        } else {
+          i = Math.round(i - 0.5)
+        }
+      }
+      return [i, j]
+    } // end of getPositionByCoodinates
+
+    getCoordinatesByPosition (radius, position) {
+      let posOThis = [parseInt(position[0]), parseInt(position[1])]
+      let x = (posOThis[1] % 2 === 0) ? (2 * radius * posOThis[0]) : ((2 - 1 / Math.abs(posOThis[0])) * radius * posOThis[0])
+      let y = Math.sqrt(3) * radius * posOThis[1]
+      return [x, y]
+    } // end of getCoordinatesByPosition
     } // end of class Hexagon
 
   return ExportClass(Hexagon)

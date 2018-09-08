@@ -9,9 +9,21 @@ define([
 ], function (require, Mn, _, $, Backbone, Combinations, SubMap_Model) {
   'use strict'
 
-  var dot = numeric.dot, trans = numeric.transpose, sub = numeric.sub, div = numeric.div, clone = numeric.clone, getBlock = numeric.getBlock,
-    add = numeric.add, mul = numeric.mul, svd = numeric.svd, norm2 = numeric.norm2, identity = numeric.identity, dim = numeric.dim,
-    getDiag = numeric.getDiag, inv = numeric.inv, sum = numeric.sum
+  var dot = numeric.dot,
+    trans = numeric.transpose,
+    sub = numeric.sub,
+    div = numeric.div,
+    clone = numeric.clone,
+    getBlock = numeric.getBlock,
+    add = numeric.add,
+    mul = numeric.mul,
+    svd = numeric.svd,
+    norm2 = numeric.norm2,
+    identity = numeric.identity,
+    dim = numeric.dim,
+    getDiag = numeric.getDiag,
+    inv = numeric.inv,
+    sum = numeric.sum
 
   $.whenWithProgress = function (arrayOfPromises) {
     var cntr = 0
@@ -157,8 +169,9 @@ define([
         t_df4 = $.Deferred(),
         t_df5 = $.Deferred(),
         t_df6 = $.Deferred(),
-        t_df7 = $.Deferred()
-                // t_df6 = $.Deferred();
+        t_df7 = $.Deferred(),
+        t_df8 = $.Deferred()
+            // t_df6 = $.Deferred();
       if (t_realTime) {
         this.sampling(t_df1)
         $.when(t_df1).done(n => {
@@ -182,6 +195,9 @@ define([
           this.getSubTree(t_df7)
         })
         $.when(t_df7).done(n => {
+          this.getMapInitProjection(t_df8)
+        })
+        $.when(t_df8).done(n => {
           this.setStage('Rendering')
           this.trigger('SubMapCollection__ShowMap')
         })
@@ -209,6 +225,9 @@ define([
                     // this.getSubTree_load(t_df7);
         })
         $.when(t_df7).done(n => {
+          this.getMapInitProjection_load(t_df8)
+        })
+        $.when(t_df8).done(n => {
           this.setStage('Rendering_load')
           this.trigger('SubMapCollection__ShowMap')
         })
@@ -235,10 +254,17 @@ define([
 
     sampling: function (v_df) {
       this.setStage('Sampling')
-      var t_dimC = this.dimCount = this.dimensions.length, t_top = Math.pow(2, t_dimC) - 1, t_all,
+      var t_dimC = this.dimCount = this.dimensions.length,
+        t_top = Math.pow(2, t_dimC) - 1,
+        t_all,
         t_count = 0
-      var log = Math.log, round = Math.round, min = Math.min, max = Math.max
-      var self = this, t_dimRange = [max(self.dimRange[0], 2), min(self.dimRange[1], self.dimCount)], t_sum = 0
+      var log = Math.log,
+        round = Math.round,
+        min = Math.min,
+        max = Math.max
+      var self = this,
+        t_dimRange = [max(self.dimRange[0], 2), min(self.dimRange[1], self.dimCount)],
+        t_sum = 0
       self.timer = new Date().getTime()
       for (var i = t_dimRange[0]; i <= t_dimRange[1]; i++) {
         let t_comb = Combinations(t_dimC, i)
@@ -253,7 +279,7 @@ define([
       }, 'PMSave(subCodes = Subsampling(subRange, subDims, subNumber), fileName)', function (v_codes) {
         for (let i = 0; i < v_codes.length; i++) {
           let t_code = v_codes[i].join('')
-          self.add(new SubMap_Model({code: t_code, dimensions: self.dimensions, id: i, collection: self}))
+          self.add(new SubMap_Model({ code: t_code, dimensions: self.dimensions, id: i, collection: self }))
         }
         self.subIndex = v_codes
         self.dataSize = self.sampleCount = v_codes.length
@@ -294,7 +320,7 @@ define([
         }
         for (let i = 0; i < v_codes.length; i++) {
           let t_code = v_codes[i].join('')
-          this.add(new SubMap_Model({code: t_code, dimensions: this.dimensions, id: i, collection: this}))
+          this.add(new SubMap_Model({ code: t_code, dimensions: this.dimensions, id: i, collection: this }))
         }
         this.subIndex = v_codes
         this.dataSize = this.sampleCount = v_codes.length
@@ -512,7 +538,7 @@ define([
         t_length = v_isTemp ? v_length : this.sampleCount,
         t_min_elems = Math.round(t_length / 8),
         t_level = this.clusterLevel = Config.get('clusterLevels'),
-        t_newMaxLevel = {level: 0},
+        t_newMaxLevel = { level: 0 },
         t_save = (v_command) => {
           if (!v_isTemp) {
             return 'PMSave(' + v_command + ', fileName)'
@@ -570,7 +596,7 @@ define([
     getSubHierClusters_load: function (v_df) {
       this.setStage('SubHierClusters_load')
       let t_getLevel = this.getLevelFunc,
-        t_newMaxLevel = {level: 0},
+        t_newMaxLevel = { level: 0 },
         t_level = this.clusterLevel = Config.get('clusterLevels')
       this.trigger('SubMapCollection__Panda', {
         fileName: this.dataFiles.get('subClusters')
@@ -598,9 +624,7 @@ define([
 
     getSubTree: function (v_df) {
       this.setStage('SubTree')
-      this.trigger('SubMapCollection__Panda', {
-      }, 'subTree = GetSubtree(subClusters, subCodes, subKNNDistr, subNghList)', v_tree => {
-        console.log(v_tree)
+      this.trigger('SubMapCollection__Panda', {}, 'subTree = GetSubtree(subClusters, subCodes, subDataDist, subKNNDistr, subNghList)', v_tree => {
         this.subTree = v_tree
         this.subTree.findByIndex = function (v_clsIDs) {
           if (v_clsIDs == null) {
@@ -624,8 +648,7 @@ define([
 
     getSubTree_load: function (v_df) {
       this.setStage('SubTree_load')
-      this.trigger('SubMapCollection__Panda', {
-      }, 'subTree = GetSubtree(subClusters, subCodes, subKNNDistr, subNghList)', v_tree => {
+      this.trigger('SubMapCollection__Panda', {}, 'subTree = GetSubtree(subClusters, subCodes, subDataDist, subKNNDistr, subNghList)', v_tree => {
         this.subTree = v_tree
         this.subTree.findByIndex = function (v_clsIDs) {
           if (v_clsIDs == null) {
@@ -644,6 +667,30 @@ define([
         if (v_df) {
           v_df.resolve()
         }
+      }, true, true)
+    },
+
+    getMapInitProjection: function (df) {
+      let dcdDistMatrix = this.subTree.data.dcdDistMatrix
+      this.trigger('SubMapCollection__Panda', {
+        projType: 'MDS',
+        projDim: 2,
+        mapInitDistMatrix: dcdDistMatrix
+      }, 'subProj = Projection(mapInitDistMatrix, projType, projDim)', projection => {
+        this.subTree.data.initProjection = projection
+        df.resolve()
+      }, true, true)
+    },
+
+    getMapInitProjection_load: function (df) {
+      let dcdDistMatrix = this.subTree.data.dcdDistMatrix
+      this.trigger('SubMapCollection__Panda', {
+        projType: 'MDS',
+        projDim: 2,
+        mapInitDistMatrix: dcdDistMatrix
+      }, 'subProj = Projection(mapInitDistMatrix, projType, projDim)', projection => {
+        this.subTree.data.initProjection = projection
+        df.resolve()
       }, true, true)
     },
 
@@ -701,8 +748,11 @@ define([
         // },
 
     getProjection: function (v_df) {
-      var self = this, t_w = Config.get('KNNGDistWeight')
-      var t_df0 = $.Deferred(), t_df1 = $.Deferred(), t_dfs = []
+      var self = this,
+        t_w = Config.get('KNNGDistWeight')
+      var t_df0 = $.Deferred(),
+        t_df1 = $.Deferred(),
+        t_dfs = []
       t_dfs.push(t_df0.promise())
       t_dfs.push(t_df1.promise())
       self.trigger('SubMapCollection__Panda', {
@@ -723,12 +773,12 @@ define([
       }, true, true)
             // t_df1.resolve();
       $.whenWithProgress(t_dfs)
-            .done(function () {
-              self.trigger('SubMapCollection__ShowMap')
-              if (v_df) {
-                v_df.resolve()
-              }
-            })
+                .done(function () {
+                  self.trigger('SubMapCollection__ShowMap')
+                  if (v_df) {
+                    v_df.resolve()
+                  }
+                })
             //         self.projection = MDS.byDistance(self.dist);
             //         self.trigger("SubMapCollection__ShowProjection");
     },
@@ -773,7 +823,10 @@ define([
 
     getModel: function (v_df) {
       var self = this
-      var t_df0 = $.Deferred(), t_df1 = $.Deferred(), t_df2 = $.Deferred(), t_dfs = []
+      var t_df0 = $.Deferred(),
+        t_df1 = $.Deferred(),
+        t_df2 = $.Deferred(),
+        t_dfs = []
       t_dfs.push(t_df0.promise())
       t_dfs.push(t_df1.promise())
       t_dfs.push(t_df2.promise())
@@ -783,7 +836,9 @@ define([
       }, 'KNNGOperate(modelName, oprType, oprTarget)', v_result => {
         let t_wordmap = []
         for (let i = 0; i < v_result.length; i++) {
-          let t_word = v_result[i], t_from = t_word[0], t_to = t_word[1]
+          let t_word = v_result[i],
+            t_from = t_word[0],
+            t_to = t_word[1]
           let t_name = t_from + '_' + t_to
           t_wordmap[i] = {
             from: t_from,
@@ -808,11 +863,11 @@ define([
         t_df2.resolve()
       }, true, true)
       $.whenWithProgress(t_dfs)
-            .done(function () {
-              if (v_df) {
-                v_df.resolve()
-              }
-            })
+                .done(function () {
+                  if (v_df) {
+                    v_df.resolve()
+                  }
+                })
     },
 
     drawModel: function () {
@@ -825,7 +880,9 @@ define([
     },
 
     binaryRandom: function (v_range, v_limits) {
-      var self = this, t_dim = self.dimCount, t_num, t_st, t_length, t_sign
+      var self = this,
+        t_dim = self.dimCount,
+        t_num, t_st, t_length, t_sign
       while (!t_sign) {
         t_num = _.random(v_range[0], v_range[1]), t_st = t_num.toString(2), t_sign = false, t_length = t_st.length
         if (t_length >= v_limits[0] && t_length <= v_limits[1]) {
@@ -834,7 +891,8 @@ define([
               t_st = '0' + t_st
             }
           }
-          var t_arr = t_st.split(''), t_count = 0
+          var t_arr = t_st.split(''),
+            t_count = 0
           for (var i in t_arr) {
             if (t_arr[i] == '1') {
               t_count++
