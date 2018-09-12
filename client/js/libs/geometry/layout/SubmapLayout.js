@@ -25,7 +25,7 @@ define([
     } // end of constructor of SubCluster
 
     initialize () {
-            // layout the center
+      // layout the center
       if (this.isTopChild) {
         this.centerLeafName = this.subTree.data.centerLeafName[0]
         this.center.ID = this.centerLeafName // update the center
@@ -33,7 +33,7 @@ define([
       }
     } // end of initialize
 
-        // layout one leaf
+    // layout one leaf
     layoutLeaf (leafName, leafNode) {
       let leafPosition = leafNode.position.i + '_' + leafNode.position.j
       this.allLeaves.set(leafName, leafNode) // update allLeaves
@@ -60,12 +60,12 @@ define([
       let weightFunc = (dist) => {
         return 1 / (dist * dist)
       }
-            // weights of the siblings (leafs in the same subtree)
+      // weights of the siblings (leafs in the same subtree)
       for (let leafPosition of this.occupied) {
         let distance = distMatrix[thisLeaf][leafPosition[1]]
         weights.set(leafPosition[0], weightFunc(distance))
       }
-            // weights of the others (existing list)
+      // weights of the others (existing list)
       for (let leafPosition of existingList) {
         let distance = distMatrix[thisLeaf][leafPosition[1]]
         weights.set(leafPosition[0], weightFunc(distance))
@@ -120,15 +120,17 @@ define([
         this.layoutLeaf(leafName, leafNode)
       }
     } // end of layoutAll
-    } // end of class SubCluster
+  } // end of class SubCluster
 
   class SubmapLayout {
     constructor (subTree, distMatrix, subCodes, gridType, gridScaling) {
       this.subTree = subTree // references to the parameters, not new variables
       this.path2This = subTree.index
       this.distMatrix = distMatrix
-      this.codes = subCodes
       this.cellRadius = 1
+      this.centerLeafName
+      this.gridType = gridType
+      this.codes = subCodes
       let polygonCreator
       switch (gridType) {
         case 'hexagon':
@@ -143,6 +145,7 @@ define([
       this.numberOAnchors = subTree.data.initProjection.length
       this.gridScaling = gridScaling
       this.allLeaves = new Map() // leafName - node
+      this.occupied = new Map() //  position ('i_j') - leafName
       this.descendants = new Map() // prefix ('child_' or 'leaf_') + childCID / leafName - node
       this.dcdTraversalOrder = this.subTree.data.dcdTraversalOrder
     } // end of constructor of SubmapLayout
@@ -150,11 +153,12 @@ define([
     getMap () {
       this.layoutAnchors()
       this.layoutAll()
+      this.summarize()
     } // end of getMap
 
     layoutAnchors () {
       let initProjection = this.subTree.data.initProjection
-      let gridRadius = Math.round(this.numberODCD * this.gridScaling / 2) // gridRadius: the amount of grids in one direction
+      let gridRadius = Math.round(Math.sqrt(this.numberODCD * this.gridScaling)) // gridRadius: the amount of grids in one direction
       let gridRange = { x: { min: -gridRadius, max: gridRadius }, y: { min: -gridRadius, max: gridRadius } }
       let extrema = { x: { min: Infinity, max: -Infinity }, y: { min: Infinity, max: -Infinity } }
       for (let anchorID = 0; anchorID < this.numberOAnchors; anchorID++) {
@@ -164,42 +168,51 @@ define([
         if (anchor[1] < extrema.y.min) { extrema.y.min = anchor[1] }
         if (anchor[1] > extrema.y.max) { extrema.y.max = anchor[1] }
       }
-            // the order in dcdDistMatrix:    [children, leaves], which does not follow  the dcdTraversalOrder
+      // the order in dcdDistMatrix:    [children, leaves], which does not follow  the dcdTraversalOrder
+      let centerInfo = this.dcdTraversalOrder[0]
       for (let anchorID = 0; anchorID < this.numberOAnchors; anchorID++) {
-                // Step 1:   transform the projection coordinates into grid coordinates
+        // Step 1:   transform the projection coordinates into grid coordinates
         let originalCoords = initProjection[anchorID]
         let newCoords = []
         newCoords[0] = (originalCoords[0] - extrema.x.min) / (extrema.x.max - extrema.x.min) * (gridRange.x.max - gridRange.x.min) + gridRange.x.min
         newCoords[1] = (originalCoords[1] - extrema.y.min) / (extrema.y.max - extrema.y.min) * (gridRange.y.max - gridRange.y.min) + gridRange.y.min
         newCoords[0] = newCoords[0] * 2 * this.cellRadius
         newCoords[1] = newCoords[1] * 2 * this.cellRadius
-                // Step 2:   transform the grid coordinates into integer positions
+        // Step 2:   transform the grid coordinates into integer positions
         let anchorPosition = this.polygon.getPositionByCoordinates(this.cellRadius, newCoords)
-                // Step 3:   see if the anchor represents a child
+        // Step 3:   see if the anchor represents a child
         let isChild = anchorID < this.numberOChildren
         let anchorName
         let anchor
         if (isChild) {
-                    // is a child, then create a SubCluster
+          // is a child, then create a SubCluster
           let childCID = anchorID
           anchorName = 'child_' + childCID
           anchor = this.polygonCreator(childCID, this.cellRadius, anchorPosition)
           let subClusterNode = new SubCluster(childCID, this.subTree.children[childCID], anchor, 1, this.gridType, this.cellRadius, this.polygonCreator)
           this.descendants.set(anchorName, subClusterNode)
+          // get the centerLeafName
+          if (centerInfo[1] === 0 && centerInfo[0] === childCID) {
+            this.centerLeafName = subClusterNode.centerLeafName
+          }
         } else {
-                    // not a child, then put in the anchor
+          // not a child, then put in the anchor
           let leafID = anchorID - this.numberOChildren
           let leafName = this.subTree.leaves[leafID]
           anchorName = 'leaf_' + leafName
           anchor = this.polygonCreator(leafName, this.cellRadius, anchorPosition)
           this.descendants.set(anchorName, anchor)
           this.allLeaves.set(leafName, anchor)
+          this.occupied.set(anchor.position.i + '_' + anchor.position.j, leafName)
+          if (centerInfo[1] === -1 && centerInfo[0] === leafName) {
+            this.centerLeafName = leafName
+          }
         }
       }
     } // end of layoutAnchors
 
     layoutAll () {
-            // the layout process needs  to follow the dcdTraversalOrder
+      // the layout process needs  to follow the dcdTraversalOrder
       for (let traversalOrder = 0; traversalOrder < this.dcdTraversalOrder.length; traversalOrder++) {
         let dcdInfo = this.dcdTraversalOrder[traversalOrder]
         if (dcdInfo[1] === -1) { // this is a direct leaf
@@ -207,11 +220,12 @@ define([
         } else { // this is a child
           let childCID = dcdInfo[0]
           let childCluster = this.descendants.get('child_' + childCID)
-                    // Step 1:   get the forbidden list and the existing list
+          // Step 1:   get the forbidden list and the existing list
           let [existingList, forbiddenList] = this.prepare4Layout(childCID)
-                    // Step 2:   layout for this cluster
+          // Step 2:   layout for this cluster
           childCluster.layoutAll(this.distMatrix, existingList, forbiddenList)
           this.allLeaves = new Map([...this.allLeaves, ...childCluster.allLeaves])
+          this.occupied = new Map([...this.occupied, ...childCluster.occupied])
         }
       }
     } // end of layoutAll
@@ -222,20 +236,20 @@ define([
       for (let traversalOrder = 0; traversalOrder < this.dcdTraversalOrder.length; traversalOrder++) {
         let dcdInfo = this.dcdTraversalOrder[traversalOrder]
         if (dcdInfo[1] === -1) { // this is a direct leaf
-                    // put in the descendant itself
+          // put in the descendant itself
           let descendant = this.descendants.get('leaf_' + dcdInfo[0])
           extList.set(descendant.position.i + '_' + descendant.position.j, dcdInfo[0])
-                    // put in the neighbors
+          // put in the neighbors
           let neighbors = descendant.neighbors // this is a map
           for (let neighbor of neighbors) {
             fbdList.add(neighbor[1].join('_'))
           }
         } else { // this is a child
           if (dcdInfo[0] !== childCID) { // not itself
-                        // put in the descendant itself
+            // put in the descendant itself
             let descendant = this.descendants.get('child_' + dcdInfo[0])
             extList = new Map([...extList, ...descendant.occupied])
-                        // put in the neighbors
+            // put in the neighbors
             let neighbors = descendant.neighbors // this is a set
             fbdList = new Set([...fbdList, ...neighbors])
           }
@@ -243,7 +257,48 @@ define([
       }
       return [extList, fbdList]
     } // end of prepare4Layout
-    } // end of class SubmapLayout
+
+    summarize () {
+      // Step 1:   prepare the factors
+      let xFactor
+      let yFactor
+      switch (this.gridType) {
+        case 'hexagon':
+          xFactor = 1
+          yFactor = 2 * Math.sqrt(3) / 3
+          break
+      }
+      // Step 2:   get the range of coordinates
+      let extCoords = { x: { min: Infinity, max: -Infinity }, y: { min: Infinity, max: -Infinity } }
+      for (let leaf of this.allLeaves) {
+        let leafCoords = leaf[1].center.coordinates
+        extCoords.x.max = Math.max(leafCoords.x, extCoords.x.max)
+        extCoords.x.min = Math.min(leafCoords.x, extCoords.x.min)
+        extCoords.y.max = Math.max(leafCoords.y, extCoords.y.max)
+        extCoords.y.min = Math.min(leafCoords.y, extCoords.y.min)
+      }
+      extCoords.x.max = extCoords.x.max + 3 * this.cellRadius * xFactor
+      extCoords.x.min = extCoords.x.min - 3 * this.cellRadius * xFactor
+      extCoords.y.max = extCoords.y.max + 3 * this.cellRadius * yFactor
+      extCoords.y.min = extCoords.y.min - 3 * this.cellRadius * yFactor
+      extCoords.aspectRatio = (extCoords.y.max - extCoords.y.min) / (extCoords.x.max - extCoords.x.min)
+      // Step 3:   get the range of integer positions
+      let extPosition = { i: { min: Infinity, max: -Infinity }, j: { min: Infinity, max: -Infinity } }
+      for (let leaf of this.allLeaves) {
+        let leafPosition = leaf[1].position
+        extPosition.i.max = Math.max(leafPosition.i, extPosition.i.max)
+        extPosition.i.min = Math.min(leafPosition.i, extPosition.i.min)
+        extPosition.j.max = Math.max(leafPosition.j, extPosition.j.max)
+        extPosition.j.min = Math.min(leafPosition.j, extPosition.j.min)
+      }
+      extPosition.i.max = extPosition.i.max + 1
+      extPosition.i.min = extPosition.i.min - 1
+      extPosition.j.max = extPosition.j.max + 1
+      extPosition.j.min = extPosition.j.min - 1
+      this.coordsRange = extCoords
+      this.positionRange = extPosition
+    } // end of summarize
+  } // end of class SubmapLayout
 
   return ExportClass(SubmapLayout)
 })

@@ -27,8 +27,8 @@ define([
         'Synthetic': 'data/synthetic.csv',
         'Abalone': 'data/abalone.csv'
       },
-      'dataPath': 'data/Iris.csv', // Iris.csv, Car.csv, 3DBall.csv, 2DPlanes.csv, swissroll.csv
-      'currentData': 'Iris',
+      'dataPath': 'data/Car.csv', // Iris.csv, Car.csv, 3DBall.csv, 2DPlanes.csv, swissroll.csv
+      'currentData': 'Car',
       'realTimeCompute': true,
       'distType': 'KNN', // "KNN", "Matrix"
       'glyphType': 'fan', // "fill", "fan", "stick"

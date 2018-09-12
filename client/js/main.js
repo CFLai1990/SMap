@@ -26,7 +26,7 @@ require.config({
     'mst': ['delaunay', 'kruskal']
   },
   paths: {
-        // libs loader
+    // libs loader
     'text': '../bower_components/text/text',
     'jquery': ['../bower_components/jquery/dist/jquery.min'],
     'jqueryui': ['../node_modules/jquery-ui-dist/jquery-ui'],
@@ -65,12 +65,12 @@ require.config({
     'PDHist': 'libs/pandaHist',
     'backbone.routefilter': '../bower_components/backbone.routefilter/dist/backbone.routefilter.min',
     'exportClassFromAMD': '../bower_components/exportClassFromAMD/index',
-        // templates path
+    // templates path
     'templates': '../templates',
-        // controls
+    // controls
     'Router': 'controls/router',
     'Controller': 'controls/controller',
-        // models
+    // models
     'datacenter': 'models/datacenter.model',
     'config': 'models/config.model',
     'variables': 'models/variables.model',
@@ -78,21 +78,22 @@ require.config({
     'SubMap_Model': 'models/submap.model',
     'SubList_Model': 'models/sublist.model',
     'Projection_Model': 'models/projection.model',
-        // collections
+    // collections
     'SubMap_Collection': 'collections/submap_Collection',
     'SubList_Collection': 'collections/sublist_Collection',
     'Projection_Collection': 'collections/projection_Collection',
-        // views
+    // views
     'Base': 'views/base.view',
     'AppView': 'views/app.view',
     'SubMap_LayoutView': 'views/submap_Layout.view',
-/*    'SubMap_CollectionView': 'views/submap_Collection.view', */
-    'SubMap_CollectionView': 'views/submap_Collection_v0.1.view',
+    /*    'SubMap_CollectionView': 'views/submap_Collection.view', */
+    /*    'SubMap_CollectionView': 'views/submap_Collection_v0.1.view', */
+    'SubMap_CollectionView': 'views/submap_Collection_v0.2.view',
     'SubMap_ModelView': 'views/submap_Model.view',
     'SubList_LayoutView': 'views/sublist_Layout.view',
     'SubList_CollectionView': 'views/sublist_Collection.view',
     'Projection_LayoutView': 'views/projection_Layout.view',
-/*    'Projection_CollectionView': 'views/projection_Collection.view' */
+    /*    'Projection_CollectionView': 'views/projection_Collection.view' */
     'Projection_CollectionView': 'views/projection_Collection_v0.1.view'
   }
 })

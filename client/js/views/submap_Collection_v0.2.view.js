@@ -1209,13 +1209,6 @@ define(
             )
         },
 
-        showTiling_new: function (df) {
-            // Step 1:   get the layout
-          let submapLayout = Geometry.layout.submap(this.collection.subTree, this.fMatrix, this.fCodes.codes, Config.get('gridType'), 2)
-          submapLayout.getMap()
-          df.resolve()
-        },
-
           /*              showTiling: function (v_df) {
                           let t_this = this
                           let t_renderMap = (v_df, v_g, v_glyphSize, v_colors) => {
@@ -1558,38 +1551,45 @@ define(
                           })
                         }, // end of showTiling */
 
-        renderNewMap: function (container, mapGrids, transDuration) {
+        renderNewMap: function (container, theMap, transDuration) {
           let filterCodes = this.fCodes
           let gridScales = this.scales
           let glyphSize = this.glyphSize
           let glyphColors = this.currentColors
+          let leafNodes = Basic.mapToArray(theMap.allLeaves, 'values')
+          let coordsRange = theMap.coordsRange
+          let aspectRatio = coordsRange.aspectRatio
+          if (aspectRatio > 1) {
+            gridScales.x.domain([coordsRange.x.min * aspectRatio, coordsRange.x.max * aspectRatio])
+            gridScales.y.domain([coordsRange.y.min, coordsRange.y.max])
+          } else {
+            gridScales.x.domain([coordsRange.x.min, coordsRange.x.max])
+            gridScales.y.domain([coordsRange.y.min / aspectRatio, coordsRange.y.max / aspectRatio])
+          }
           SubGlyph.init(glyphSize, glyphSize, Config.get('mapType'), Config.get('glyphType'), glyphColors)
             // Step 1:   render containers for the cells
-          let thisContainer = container.selectAll('.SubMapGridRows')
-              .data(mapGrids)
-              .enter()
-              .append('g')
-              .attr('class', 'SubMapGridRows')
-              .selectAll('.SubMapGrids')
-              .data(d => { return d })
+          let thisContainer = container.selectAll('.SubMapGrids')
+              .data(leafNodes)
               .enter()
               .append('g')
               .attr('class', 'SubMapGrids')
               .attr('index', cell => {
-                if (cell.id == null) {
-                  return -1
+                if (filterCodes.dataIndeces == null) {
+                  return cell.ID
                 } else {
-                  if (filterCodes.dataIndeces == null) {
-                    return cell.id
-                  } else {
-                    return filterCodes.dataIndeces[cell.id]
-                  }
+                  return filterCodes.dataIndeces[cell.ID]
                 }
               })
               .attr('gSize', glyphSize)
-              .classed('empty', cell => { return cell.id == null })
-              .attr('position', cell => { return (Basic.scale(gridScales, cell.pos)).join('_') })
-              .attr('transform', cell => { return ('translate(' + Basic.scale(gridScales, cell.pos) + ')') })
+              .classed('empty', cell => { return cell.ID == null })
+              .attr('position', cell => {
+                let centerCoords = cell.center.coordinates
+                return (Basic.scale(gridScales, [centerCoords.x, centerCoords.y])).join('_')
+              })
+              .attr('transform', cell => {
+                let centerCoords = cell.center.coordinates
+                return ('translate(' + Basic.scale(gridScales, [centerCoords.x, centerCoords.y]) + ')')
+              })
             // '.SubMapTiling':   the top-level g container
           this.d3el.selectAll('.SubMapTiling')
               .attr('opacity', 0)
@@ -1604,27 +1604,23 @@ define(
             // cellFunction:   render function for each cell
           let cellFunction = function (containerCell) {
             let cell = d3.select(containerCell).data()[0]
-            let leafName = cell.id // leafName
+            let leafName = cell.ID // leafName
               // Step 2-1:   get the color of the cell
-            let colorOCell // color of this cell
-            if (leafName != null) {
-              colorOCell = glyphColors[leafName]
-              colorOCell = [~~(255 * colorOCell[0]), ~~(255 * colorOCell[1]), ~~(255 * colorOCell[2])]
-              colorOCell = 'rgb(' + colorOCell + ')'
-            } else {
-              colorOCell = '#fff'
-            }
+            let colorOCell = glyphColors[leafName] // color of this cell
+            colorOCell = [~~(255 * colorOCell[0]), ~~(255 * colorOCell[1]), ~~(255 * colorOCell[2])]
+            colorOCell = 'rgb(' + colorOCell + ')'
               // Step 2-2:   prepare the neighbors
+            let centerCoords = cell.center.coordinates
+            let cellPosition = [centerCoords.x, centerCoords.y]
             let neighbors
-            let cellPosition = cell.pos
             let angleUnit
             switch (Config.get('gridType')) {
               case 'hexagon':
-                angleUnit = Math.PI * 2 / 6
+                angleUnit = 60
                 neighbors = new Array(6)
                 for (let i = 0; i < 6; i++) {
                   neighbors[i] = {
-                    angle: angleUnit * i,
+                    angle: (angleUnit * i / 180) * Math.PI,
                     diff: null,
                     dist: null
                   }
@@ -1635,58 +1631,19 @@ define(
                 break
             }
               // Step 2-2:  still preparing the neighbors
-            let nghFunction = function (nghOThis) {
-              let neighborCell = mapGrids[nghOThis[0]][nghOThis[1]]
-              let nghLeafName = neighborCell.id
-              let nghPosition = neighborCell.pos
-              let posDifference = [nghPosition[0] - cellPosition[0], nghPosition[1] - cellPosition[1]]
-              let codeDifference
-              let nghDistance
-              let nghAngle
-              if (nghLeafName != null) {
-                nghDistance = filterMatrix.distMat[leafName][nghLeafName]
-                codeDifference = filterMatrix.diffMat[leafName][nghLeafName]
-                if (Math.abs(posDifference[0]) < Number.EPSILON) {
-                  if (nghPosition[1] > cellPosition[1]) {
-                    nghAngle = Math.PI / 2
-                  } else {
-                    nghAngle = -Math.PI / 2
-                  }
-                } else {
-                  let tanValue = posDifference[1] / posDifference[0]
-                  nghAngle = Math.atan(tanValue)
-                  if (tanValue < 0) {
-                    if (posDifference[1] > 0) {
-                      nghAngle += Math.PI
-                    } else {
-                      nghAngle += Math.PI * 2
-                    }
-                  } else {
-                    if (tanValue > 0) {
-                      if (posDifference[1] < 0) {
-                        nghAngle += Math.PI
-                      }
-                    } else {
-                      if (tanValue === 0) {
-                        if (posDifference[0] > 0) {
-                          nghAngle = 0
-                        } else {
-                          nghAngle = Math.PI
-                        }
-                      }
-                    }
-                  }
-                }
-                let nghID = Math.round(nghAngle / angleUnit)
-                neighbors[nghID].dist = nghDistScale(nghDistance)
-                neighbors[nghID].diff = codeDifference
+            for (let neighbor of cell.neighbors) {
+              let nghIntPos = neighbor[1]
+              let nghIndex = nghIntPos.join('_')
+              if (theMap.occupied.has(nghIndex)) { // the neighbor cell is also a leaf
+                let nghLeafName = theMap.occupied.get(nghIndex)
+                let nghID = Math.round(neighbor[0] / angleUnit)
+                neighbors[nghID].dist = nghDistScale(filterMatrix.distMat[leafName][nghLeafName])
+                neighbors[nghID].diff = filterMatrix.diffMat[leafName][nghLeafName]
               }
-            } // end of nghFunction
-            if (leafName != null) { // not empty
-              cell.gridNeighbors.forEach(nghFunction)
-            } // end of Step 2-2
+            }
+              // end of Step 2-2
               // Step 2-3:   prepare the dimension weights
-            let weights = leafName == null ? null : dimWeights[leafName]
+            let weights = dimWeights[leafName]
             let parameters = [d3.select(containerCell), neighbors, leafName, filterCodes.codes[leafName], colorOCell, pattern, weights, dimWeights.extent]
             if (leafName == null) {
               emptyCellParameters.add(parameters)
@@ -1696,16 +1653,11 @@ define(
           } // end of cellFunction
           let emptyCellParameters = new Set()
           let cellParameters = new Set()
-          thisContainer.call(function (container) {
-            container.forEach(function (containerRow) {
-              containerRow.forEach(cellFunction) // end of containerRow.forEach
-            }) // end of container.forEach
-          }) // end of thisContainer.call
+          thisContainer.forEach(function (container) {
+            container.forEach(cellFunction) // end of containerRow.forEach
+          }) // end of thisContainer.forEach
             // Step 3:   render the cells
           let interactions = this.interactions
-          emptyCellParameters.forEach(emptyCellParameter => {
-            SubGlyph.showGlyph(...emptyCellParameter)
-          }) // render empty cells
           cellParameters.forEach(cellParameter => {
             let cellContainer = SubGlyph.showGlyph(...cellParameter)
             cellContainer.on('click', function (cell) {
@@ -1715,7 +1667,7 @@ define(
           }) // render non-empty cells
         }, // end of renderNewMap
 
-        hideOldMap: function (df, mapGrids) {
+        hideOldMap: function (df, theMap) {
           let glyphSize = this.glyphSize
           let gridScales = this.scales
           let glyphColors = this.currentColors
@@ -1733,7 +1685,7 @@ define(
               endDuration = longDuration
               this.hideClusters(true, midDuration)
               setTimeout(() => {
-                this.moveGrids(mapGrids, gridScales, glyphColors, glyphSize, endDuration)
+                this.moveGrids(theMap, gridScales, glyphColors, glyphSize, endDuration)
               }, 300)
             }
             setTimeout(() => {
@@ -1742,27 +1694,28 @@ define(
           })
         }, // end of hideOldMap
 
-        renderMap: function (df, container, mapGrids) {
+        renderMap: function (df, container, theMap) {
           let dfOThis = $.Deferred()
-          this.hideOldMap(dfOThis, mapGrids)
+          this.hideOldMap(dfOThis, theMap)
           $.when(dfOThis).done(transDuration => {
-            this.renderNewMap(container, mapGrids, transDuration)
+            this.renderNewMap(container, theMap, transDuration)
             df.resolve()
           })
         }, // end of renderMap
 
         showTiling: function (df) {
           let theMap
+          let mapGrids
             // Step 1:   get the map layout
           if (!this.zoomed && this.overallMap != null) {
             theMap = this.overallMap
           } else {
-            theMap = Tiling.getMap(this.fMatrix.neighbors, this.fMatrix.distMat, this.fCodes.codes, Config.get('gridType'), Config.get('gridScaling'))
+            mapGrids = Tiling.getMap(this.fMatrix.neighbors, this.fMatrix.distMat, this.fCodes.codes, Config.get('gridType'), Config.get('gridScaling'))
+            console.log('Map: ', mapGrids)
               // get the map layout
-            console.log('Map: ', theMap)
-            let submapLayout = Geometry.layout.submap(this.collection.subTree, this.fMatrix.distMat, this.fCodes.codes, Config.get('gridType'), 2)
-            submapLayout.getMap()
-            console.log('newMap: ', submapLayout)
+            theMap = Geometry.layout.submap(this.collection.subTree, this.fMatrix.distMat, this.fCodes.codes, Config.get('gridType'), 1)
+            theMap.getMap()
+            console.log('newMap: ', theMap)
             if (!this.zoomed) {
               this.overallMap = theMap
             }
@@ -1771,11 +1724,11 @@ define(
             console.error('ERROR: ' + theMap)
           }
             // Step 2:   update the map colors if necessary
-          let mapGrids = theMap.grids
           if (!this.freeDim) {
             this.freeDim = this.fCodes.codes[0].length
           }
-          let centerID = mapGrids.getCenterPID()
+          let centerID = mapGrids.grids.getCenterPID()
+          /* let centerID = theMap.centerLeafName */
           if (this.zoomed) {
             let colors = Basic.subArray(this.colors, this.fCodes.dataIndeces, [0, 1, 2])
             this.currentColors = SubRotate.groupMoveTo(this.currentColors, colors) // rgb color;
@@ -1805,7 +1758,9 @@ define(
           let viewSize = [gridScales.x.range()[1] - gridScales.x.range()[0], gridScales.y.range()[1] - gridScales.y.range()[0]]
           let df4Zoom = $.Deferred()
           let df4OldMap = $.Deferred()
-          this.glyphSize = viewSize[0] * 0.5 / mapGrids.radius
+          let coordsRange = theMap.coordsRange
+          coordsRange = Math.max(coordsRange.x.max - coordsRange.x.min, coordsRange.y.max - coordsRange.y.min)
+          this.glyphSize = viewSize[0] * theMap.cellRadius / coordsRange
           if (!this.isNew) {
             let animationTime = this.visible.toLevel([0, 0], 0, this.transition.duration)
             setTimeout(() => {
@@ -1819,7 +1774,7 @@ define(
             this.d3el.select('.SubMapTiling').classed('SubMapTiling', false).classed('SubOldTiling', true)
             this.visible = this.initVisible(centerPosition, viewSize[0], this.glyphSize, this.currentCls.level, this.currentColors)
             let container = this.visible.prepareContainer(this.d3el)
-            this.renderMap(df4OldMap, container, mapGrids)
+            this.renderMap(df4OldMap, container, theMap)
           })
             // Step 6:   render the cluster contours
           $.when(df4OldMap).done(() => {

@@ -355,7 +355,6 @@
                                 let score = (t_weights[t_dim] - t_ext.min) / (t_ext.max - t_ext.min)
                                 score = score * 20 - 10
                                 score = 1 / (Math.exp(-score) + 1)
-                                console.log(score, 0 + 0.9 * score)
                                 return 0 + 0.9 * score
                                     // return 0 + 0.9 * Math.pow(t_weights[t_dim],3) / Math.pow(t_ext.max,3);
                               }
