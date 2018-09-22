@@ -3,7 +3,7 @@ define([
   'exportClassFromAMD'
 ], function (GeoElements, ExportClass) {
   class Hexagon {
-        // constructor: [i, j], 'string', float
+    // constructor: [i, j], 'string', float
     constructor (externalID, radius, integerPosition) {
       this.type = 'hexagon'
       this.ID = externalID
@@ -14,16 +14,16 @@ define([
       }
       this.center = GeoElements.Point('center', this.getCenterCoordinates())
       this.neighbors = this.getNeighborsInPosition()
-      this.vertexes = this.getVertexes()
+      this.edges = this.getEdges()
     } // end of constructor of Hexagon
 
-        // get the coordinates of the center
+    // get the coordinates of the center
     getCenterCoordinates () {
       let intPos = this.position
       return this.getCoordinatesByPosition(this.radius, [intPos.i, intPos.j])
     } // end of getCenterCoordinates
 
-        // get the positions of its neighbors
+    // get the positions of its neighbors
     getNeighborsInPosition () {
       let neighbors = new Map() // map: direction in degree (key) - position (value)
       let intPos = this.position
@@ -48,21 +48,36 @@ define([
       return neighbors
     } // end of getNeighborsInPosition
 
-        // get the vertexes of the hexagon
-    getVertexes () {
+    // get the edges of the hexagon
+    getEdges () {
+      // Step 1:   get the vertexes
       let vertexes = new Map() // map: direction in degree (key) - Point (value)
-      let newPoint = GeoElements.Point
       let vertexDistance = this.radius * 2 * Math.sqrt(3) / 3
       for (let i = 0; i < 6; i++) {
-        let directionInDegree = 30 + 60 * i
-        let directionInArc = directionInDegree / 180 * 2 * Math.PI
-        let vertexCoordinates = [vertexDistance * Math.cos(directionInArc), vertexDistance * Math.sin(directionInArc)]
-        vertexes.set(directionInDegree, newPoint(i, vertexCoordinates))
+        let directionInDegree = 30 + 60 * i // range:   [30, 330]
+        let directionInArc = directionInDegree / 180 * Math.PI
+        let x = this.center.coordinates.x + vertexDistance * Math.cos(directionInArc)
+        let y = this.center.coordinates.y + vertexDistance * Math.sin(directionInArc)
+        let vertexCoordinates = [x, y]
+        vertexes.set(directionInDegree, vertexCoordinates)
       }
-      return vertexes
-    } // end of getVertexes
+      // Step 2:   get the edges
+      let edges = new Map() // map: direction in degree (key) - Edge (value)
+      let newEdge = GeoElements.Edge
+      for (let i = 0; i < 6; i++) {
+        let directionInDegree = 60 * i // range:   [0, 300]
+        let startDirection = directionInDegree - 30
+        let endDirection = directionInDegree + 30
+        if (startDirection < 0) { startDirection += 360 }
+        let edgeNghPosition = this.neighbors.get(directionInDegree)
+        let thisPosition = [this.position.i, this.position.j]
+        let edge = newEdge(directionInDegree, vertexes.get(startDirection), vertexes.get(endDirection), [thisPosition, edgeNghPosition])
+        edges.set(directionInDegree, edge)
+      }
+      return edges
+    } // end of getEdges
 
-        // find the position of a point by its coordinates
+    // find the position of a point by its coordinates
     getPositionByCoordinates (radius, coordinates) {
       let j = Math.round(coordinates[1] * Math.sqrt(3) / (3 * radius))
       let i = coordinates[0] / (2 * radius)
@@ -84,7 +99,7 @@ define([
       let y = Math.sqrt(3) * radius * posOThis[1]
       return [x, y]
     } // end of getCoordinatesByPosition
-    } // end of class Hexagon
+  } // end of class Hexagon
 
   return ExportClass(Hexagon)
 })

@@ -90,7 +90,7 @@
           return t_point
         },
         t_points = new Array(v_distMat.length),
-        t_distMat = this.normalize(v_distMat)
+        t_distMat = v_distMat// this.normalize(v_distMat)
       t_points.distMat = t_distMat
       t_points.waitingList = new Set()
       for (let i = 0; i < t_points.length; i++) {

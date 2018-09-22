@@ -1932,229 +1932,181 @@ define(
           }, v_duration + 20)
         },
 
-        showClusters: function (v_map, v_scales) {
-          let t_getPathTree = (
-                v_cls,
-                v_paths,
-                v_currentLevel,
-                v_prev,
-                v_id
-              ) => {
-            let t_cls = new Array(),
-              t_out = new Array(),
-              t_returnCls = new Array()
-            for (let i = 0; i < v_cls.length; i++) {
-              if (v_cls[i].length != null) {
-                let t_simpleCls,
-                  t_prev = v_prev.slice(0)
-                t_prev.push(i)
-                t_simpleCls = t_getPathTree(
-                      v_cls[i],
-                      v_paths,
-                      v_currentLevel + 1,
-                      t_prev,
-                      i
-                    )
-                t_cls.push(t_simpleCls)
-                t_returnCls.push(...t_simpleCls)
-              } else {
-                t_returnCls.push(v_cls[i])
-                t_out.push(v_cls[i])
-              }
+        getContourTree: function (map, clusterIndices, contourTree, currentLevel, previousPath, idOThis) {
+          let cluster = []
+          let outlier = []
+          let returnedCluster = []
+          for (let i = 0; i < clusterIndices.length; i++) {
+            if (clusterIndices[i].length != null) {
+              let simpleCluster
+              let previousID = previousPath.slice(0)
+              previousID.push(i)
+              simpleCluster = this.getContourTree(map, clusterIndices[i], contourTree, currentLevel + 1, previousID, i)
+              cluster.push(simpleCluster)
+              returnedCluster.push(...simpleCluster)
+            } else {
+              returnedCluster.push(clusterIndices[i])
+              outlier.push(clusterIndices[i])
             }
-            if (t_cls.length > 0) {
-              let t_paths = Tiling.getGridClusters(v_map, t_cls)
-              v_paths[v_currentLevel].push({
-                previous: v_prev,
-                selfID: v_id + '',
-                paths: t_paths,
-                ids: t_cls,
-                outlier: false
-              })
-            }
-            if (v_currentLevel < v_paths.length && t_out.length > 0) {
-              t_out = [t_out]
-              let t_outPaths = Tiling.getGridClusters(v_map, t_out)
-              v_paths[v_currentLevel].push({
-                previous: v_prev,
-                selfID: v_id + '',
-                paths: t_outPaths,
-                ids: t_out,
-                outlier: t_cls.length > 0
-              })
-            }
-            return t_returnCls
-          },
-            t_renderPaths = (v_clsPaths, v_classNames, v_prev, v_isOut) => {
-              let t_clsLevel = v_prev.length,
-                t_cls = this.d3el
-                  .select('.SubMapTiling')
-                  .selectAll('.' + v_classNames)
-                  .data(v_clsPaths)
-                  .enter()
-                  .append('g')
-                  .attr('class', (v_d, v_i) => {
-                    let t_extra = v_isOut ? ' Outliers' : ''
-                    return (
-                      'SubMapClusters ' + v_classNames + '_' + v_i + t_extra
-                    )
-                  })
-                  .attr('clsID', (v_d, v_i) => {
-                    return [...v_prev, v_i].join('_')
-                  })
-                  .attr('fill-opacity', 0.0)
-                  .on('mouseover', function (v_d, v_i) {
-                    let t_clsID = d3.select(this).attr('clsID')
-                    if (t_interactions.hoveredID != t_clsID) {
-                      t_interactions.hoveredID = t_clsID
-                      t_interactions.mouseOver(this, v_isOut)
-                    }
-                  })
-                  .on('mouseout', (v_d, v_i) => {
-                    t_interactions.hoveredID = null
-                    t_interactions.mouseOut(v_isOut)
-                  })
-                  .on('click', function (v_d, v_i) {
-                    Basic.delay('clickPinning', 400, () => {
-                      t_interactions.pinning(this)
-                    })
-                  })
-                  .on('dblclick', (v_d, v_i) => {
-                    Basic.clearDelay('clickPinning')
-                    if (!v_isOut) {
-                      this.visible.toLevel(
-                        v_d.center,
-                        v_d.clsLevel + 1,
-                        this.transition.long
-                      )
-                    }
-                  })
-              t_cls.call(v_gs => {
-                v_gs[0].forEach(v_g => {
-                  let t_clusterPaths = d3.select(v_g).data()[0],
-                    t_paths = new Array(),
-                    t_lines = new Array(),
-                    t_rangePath = new Array(),
-                    t_rangePts,
-                    t_diameter = 0
-                    // draw block paths
-                  for (let i = 0; i < t_clusterPaths.paths.length; i++) {
-                    let t_clusterPath = t_clusterPaths.paths[i]
-                    try {
-                      let t_test = Basic.scale(v_scales, t_clusterPath[0])
-                    } catch (err) {
-                      console.error(err, t_clusterPaths)
-                    }
-                    let t_pt = Basic.scale(v_scales, t_clusterPath[0]),
-                      t_path = 'M' + t_pt
-                    for (let j = 1; j < t_clusterPath.length; j++) {
-                      let t_pt_j = Basic.scale(v_scales, t_clusterPath[j])
-                      t_path += ' L' + t_pt_j
-                      t_rangePath.push(t_pt_j)
-                    }
-                    t_paths.push(t_path)
-                  }
-                  for (let i = 0; i < t_rangePath.length - 1; i++) {
-                    for (let j = i + 1; j < t_rangePath.length; j++) {
-                      let t_dist = Basic.getDistance(
-                          t_rangePath[i],
-                          t_rangePath[j]
-                        )
-                      if (t_dist > t_diameter) {
-                        t_diameter = t_dist
-                        t_rangePts = [i, j]
-                      }
-                    }
-                  }
-                  for (let i = 0; i < t_rangePts.length; i++) {
-                    t_rangePts[i] = t_rangePath[t_rangePts[i]]
-                  }
-                  t_clusterPaths.center = Basic.getMeanVector(
-                      t_rangePts,
-                      false
-                    )
-                  t_clusterPaths.diameter = t_diameter
-                  t_clusterPaths.clsLevel = t_clsLevel
-                  d3
-                      .select(v_g)
-                      .selectAll('path')
-                      .data(t_paths)
-                      .enter()
-                      .append('path')
-                      .attr('d', vv_path => {
-                        return vv_path
-                      })
-                    // draw edge lines
-                  if (!d3.select(v_g).classed('Outliers')) {
-                    d3
-                        .select(v_g)
-                        .append('g')
-                        .attr('class', 'SubClsPaths')
-                        .selectAll('.SubClsPath')
-                        .data(t_clusterPaths.lines)
-                        .enter()
-                        .append('g')
-                        .attr('class', 'SubClsPath')
-                        .each(function (v_pathPoints, v_i) {
-                          let t_start = Basic.scale(v_scales, v_pathPoints[0]),
-                            t_end = Basic.scale(v_scales, v_pathPoints[1]),
-                            t_line = [t_start, t_end].join('_')
-                          d3
-                            .select(this)
-                            .attr('pos', t_line)
-                            .selectAll('line')
-                            .data(v_pathPoints)
-                            .enter()
-                            .append('line')
-                            .attr('x1', v_line => {
-                              return t_start[0]
-                            })
-                            .attr('y1', v_line => {
-                              return t_start[1]
-                            })
-                            .attr('x2', v_line => {
-                              return t_end[0]
-                            })
-                            .attr('y2', v_line => {
-                              return t_end[1]
-                            })
-                            .attr('stroke', '#666')
+          }
+          if (cluster.length > 0) {
+            let paths = Tiling.getGridClusters(map, cluster)
+            console.log(paths)
+            contourTree[currentLevel].push({
+              previous: previousPath,
+              selfID: idOThis + '',
+              paths: paths,
+              ids: cluster,
+              outlier: false
+            })
+          }
+            /*          if (currentLevel < contourTree.length && outlier.length > 0) {
+                        outlier = [outlier]
+                        let outlierPaths = Tiling.getGridClusters(map, outlier)
+                        console.log(outlier)
+                        contourTree[currentLevel].push({
+                          previous: previousPath,
+                          selfID: idOThis + '',
+                          paths: outlierPaths,
+                          ids: outlier,
+                          outlier: cluster.length > 0
                         })
-                  }
+                      } */
+          return returnedCluster
+        }, // end of getContourTree
+
+        renderPaths: function (clusterIndicesPaths, classNames, previousPath, isOutlier, scales) {
+          let interactions = this.interactions
+          let clusterLevel = previousPath.length
+          let cluster = this.d3el
+              .select('.SubMapTiling')
+              .selectAll('.' + classNames)
+              .data(clusterIndicesPaths)
+              .enter()
+              .append('g')
+              .attr('class', (d, index) => {
+                return 'SubMapClusters ' + classNames + '_' + index + (isOutlier ? ' Outliers' : '')
+              })
+              .attr('clsID', (d, index) => {
+                return [...previousPath, index].join('_')
+              })
+              .attr('fill-opacity', 0.0)
+              .on('mouseover', function (d, index) {
+                let clusterID = d3.select(this).attr('clsID')
+                if (interactions.hoveredID !== clusterID) {
+                  interactions.hoveredID = clusterID
+                  interactions.mouseOver(this, isOutlier)
+                }
+              })
+              .on('mouseout', (d, index) => {
+                interactions.hoveredID = null
+                interactions.mouseOut(isOutlier)
+              })
+              .on('click', function (d, index) {
+                Basic.delay('clickPinning', 400, () => {
+                  interactions.pinning(this)
                 })
               })
-            }
-          let t_this = this,
-            t_interactions = this.interactions,
-            t_clsPaths = new Array(),
-            t_levels = this.currentCls.level
-          if (!this.zoomed && this.overallCls.paths != null) {
-            t_clsPaths = this.currentCls.paths
-          } else {
-            let t_cls = this.currentCls.clusters
-            for (let i = 0; i < t_levels; i++) {
-              t_clsPaths.push(new Array())
-            }
-            t_getPathTree(t_cls, t_clsPaths, 0, [], null)
-            this.currentCls.paths = t_clsPaths
+              .on('dblclick', (d, index) => {
+                Basic.clearDelay('clickPinning')
+                if (!isOutlier) {
+                  this.visible.toLevel(d.center, d.clsLevel + 1, this.transition.long)
+                }
+              })
+          let renderFunction = function (pathPoints, index) {
+            let start = Basic.scale(scales, pathPoints[0])
+            let end = Basic.scale(scales, pathPoints[1])
+            let line = [start, end].join('_')
+            d3.select(this)
+                .attr('pos', line)
+                .selectAll('line')
+                .data(pathPoints)
+                .enter()
+                .append('line')
+                .attr('x1', start[0])
+                .attr('y1', start[1])
+                .attr('x2', end[0])
+                .attr('y2', end[1])
+                .attr('stroke', '#666')
           }
-          for (let i = t_clsPaths.length; i > 0; i--) {
-            let t_clsLevel = t_clsPaths[i - 1]
-            for (let j = 0; j < t_clsLevel.length; j++) {
-              let t_pathData = t_clsLevel[j],
-                t_paths = t_pathData.paths,
-                t_prev = t_pathData.previous,
-                t_isOut = t_pathData.outlier
-              t_renderPaths(
-                  t_paths,
-                  'SubCls' + t_prev.join('_'),
-                  t_prev,
-                  t_isOut
-                )
+          cluster.call(clsContainers => {
+            clsContainers[0].forEach(clsContainer => {
+              let clusterPaths = d3.select(clsContainer).data()[0]
+              let paths = []
+              let rangePath = []
+              let rangePts
+              let diameter = 0
+                // draw block paths
+              for (let i = 0; i < clusterPaths.paths.length; i++) {
+                let clusterPath = clusterPaths.paths[i]
+                let startPoint = Basic.scale(scales, clusterPath[0])
+                let path = 'M' + startPoint
+                for (let j = 1; j < clusterPath.length; j++) {
+                  let point = Basic.scale(scales, clusterPath[j])
+                  path += ' L' + point
+                  rangePath.push(point)
+                }
+                paths.push(path)
+              }
+              for (let i = 0; i < rangePath.length - 1; i++) {
+                for (let j = i + 1; j < rangePath.length; j++) {
+                  let distance = Basic.getDistance(rangePath[i], rangePath[j])
+                  if (distance > diameter) {
+                    diameter = distance
+                    rangePts = [i, j]
+                  }
+                }
+              }
+              for (let i = 0; i < rangePts.length; i++) {
+                rangePts[i] = rangePath[rangePts[i]]
+              }
+              clusterPaths.center = Basic.getMeanVector(rangePts, false)
+              clusterPaths.diameter = diameter
+              clusterPaths.clsLevel = clusterLevel
+              d3.select(clsContainer)
+                  .selectAll('path')
+                  .data(paths)
+                  .enter()
+                  .append('path')
+                  .attr('d', p => { return p })
+                // draw edge lines
+              if (!d3.select(clsContainer).classed('Outliers')) {
+                d3.select(clsContainer)
+                    .append('g')
+                    .attr('class', 'SubClsPaths')
+                    .selectAll('.SubClsPath')
+                    .data(clusterPaths.lines)
+                    .enter()
+                    .append('g')
+                    .attr('class', 'SubClsPath')
+                    .each(renderFunction)
+              }
+            })
+          })
+        }, // end of renderPaths
+
+        showClusters: function (map, scales) {
+          let clusterPaths = []
+          let levels = this.currentCls.level
+          if (!this.zoomed && this.overallCls.paths != null) {
+            clusterPaths = this.currentCls.paths
+          } else {
+            let cluster = this.currentCls.clusters
+            for (let i = 0; i < levels; i++) {
+              clusterPaths.push([])
+            }
+            this.getContourTree(map, cluster, clusterPaths, 0, [], null)
+            this.currentCls.paths = clusterPaths
+          }
+          for (let i = clusterPaths.length; i > 0; i--) {
+            let clusterLevel = clusterPaths[i - 1]
+            for (let j = 0; j < clusterLevel.length; j++) {
+              let pathData = clusterLevel[j]
+              this.renderPaths(pathData.paths, 'SubCls' + pathData.previous.join('_'), pathData.previous, pathData.outlier, scales)
             }
           }
           this.updateClusterInfo()
-        },
+        }, // end of showClusters
 
         updateClusterInfo: function (v_init = true) {
           if (!this.clsColorReady) {

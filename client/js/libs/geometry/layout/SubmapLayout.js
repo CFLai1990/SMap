@@ -170,6 +170,7 @@ define([
       }
       // the order in dcdDistMatrix:    [children, leaves], which does not follow  the dcdTraversalOrder
       let centerInfo = this.dcdTraversalOrder[0]
+      let anchorOccupied = new Set()
       for (let anchorID = 0; anchorID < this.numberOAnchors; anchorID++) {
         // Step 1:   transform the projection coordinates into grid coordinates
         let originalCoords = initProjection[anchorID]
@@ -180,6 +181,42 @@ define([
         newCoords[1] = newCoords[1] * 2 * this.cellRadius
         // Step 2:   transform the grid coordinates into integer positions
         let anchorPosition = this.polygon.getPositionByCoordinates(this.cellRadius, newCoords)
+        let positionID = anchorPosition.join('_')
+        if (!anchorOccupied.has(positionID)) {
+          // not occupied, than use it
+          anchorOccupied.add(positionID)
+        } else {
+          // occupied, than assign a new position
+          let node = this.polygonCreator('try', this.cellRadius, anchorPosition)
+          let existingList = new Map([[positionID, node]])
+          let foundMatch = false
+          while (!foundMatch) {
+            let newExistingList = new Map()
+            for (let existingNode of existingList) {
+              for (let neighbor of existingNode[1].neighbors) {
+                let nghPositionID = neighbor[1].join('_')
+                if (!anchorOccupied.has(nghPositionID)) {
+                  // not occupied, than use it
+                  anchorPosition = neighbor[1]
+                  positionID = nghPositionID
+                  foundMatch = true
+                  break
+                } else {
+                  if (!newExistingList.has(nghPositionID)) {
+                    let nghNode = this.polygonCreator('try', this.cellRadius, neighbor[1])
+                    newExistingList.set(nghPositionID, nghNode)
+                  }
+                }
+              }
+              if (foundMatch) { break }
+            }
+            if (!foundMatch) { // all neighbors have been used
+              existingList = newExistingList
+            }
+          }
+          anchorOccupied.add(positionID)
+        }
+
         // Step 3:   see if the anchor represents a child
         let isChild = anchorID < this.numberOChildren
         let anchorName
@@ -298,6 +335,40 @@ define([
       this.coordsRange = extCoords
       this.positionRange = extPosition
     } // end of summarize
+
+    getClusterContours (clusters) {
+      let clusterContours = []
+      for (let clusterID = 0; clusterID < clusters.length; clusterID++) {
+        // construct the contour of each cluster
+        let contour = { paths: null, lines: null }
+        let cluster = clusters[clusterID]
+        let nonRepeatEdges = new Map()
+        // Step 1:   get the non-repeat edges
+        for (let leafName of cluster) {
+          // get the leaf
+          let leafNode = this.allLeaves.get(leafName)
+          // examine its edges
+          for (let leafEdgeEntry of leafNode.edges) {
+            let edge = leafEdgeEntry[1]
+            let edgePosition = edge.nghPositions
+            if (!nonRepeatEdges.has(edgePosition)) {
+              nonRepeatEdges.set(edgePosition, edge)
+            } else {
+              nonRepeatEdges.delete(edgePosition)
+            }
+          }
+        }
+        let contourEdges = []
+        for (let edge of nonRepeatEdges) {
+          contourEdges.push(edge[1])
+        }
+        contour.lines = contourEdges
+        // Step 2:   get the contours
+        contour.paths = GeoElements.Methods.getPathsByEdges(contourEdges)
+        clusterContours[clusterID] = contour
+      }
+      return clusterContours
+    } // end of getClusterContours
   } // end of class SubmapLayout
 
   return ExportClass(SubmapLayout)

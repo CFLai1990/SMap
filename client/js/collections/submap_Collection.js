@@ -151,7 +151,7 @@ define([
 
     updateFileNames: function (v_dataID) {
       let t_dataFiles = this.dataFiles,
-        t_variables = ['subCodes', 'subGraphs', 'subKNNDistr', 'subDataDist', 'subColors', 'subClusters', 'subSortList', 'subNghList']
+        t_variables = ['subCodes', 'subGraphs', 'subKNNDistr', 'subDataDist', 'subColors', 'subClusters', 'subSortList', 'subNghList', 'mapInitProjection']
       for (let i = 0; i < t_variables.length; i++) {
         t_dataFiles.set(t_variables[i], v_dataID + '_' + t_variables[i])
       }
@@ -171,6 +171,7 @@ define([
         t_df6 = $.Deferred(),
         t_df7 = $.Deferred(),
         t_df8 = $.Deferred()
+      let test = false
             // t_df6 = $.Deferred();
       if (t_realTime) {
         this.sampling(t_df1)
@@ -198,6 +199,9 @@ define([
           this.getMapInitProjection(t_df8)
         })
         $.when(t_df8).done(n => {
+          if (test) {
+            this.test()
+          }
           this.setStage('Rendering')
           this.trigger('SubMapCollection__ShowMap')
         })
@@ -228,6 +232,9 @@ define([
           this.getMapInitProjection_load(t_df8)
         })
         $.when(t_df8).done(n => {
+          if (test) {
+            this.test()
+          }
           this.setStage('Rendering_load')
           this.trigger('SubMapCollection__ShowMap')
         })
@@ -675,22 +682,29 @@ define([
       this.trigger('SubMapCollection__Panda', {
         projType: 'MDS',
         projDim: 2,
-        mapInitDistMatrix: dcdDistMatrix
-      }, 'subProj = Projection(mapInitDistMatrix, projType, projDim)', projection => {
+        mapInitDistMatrix: dcdDistMatrix,
+        fileName: this.dataFiles.get('mapInitProjection')
+      }, 'PMSave(subProj = Projection(mapInitDistMatrix, projType, projDim), fileName)', projection => {
         this.subTree.data.initProjection = projection
         df.resolve()
       }, true, true)
     },
 
     getMapInitProjection_load: function (df) {
-      let dcdDistMatrix = this.subTree.data.dcdDistMatrix
       this.trigger('SubMapCollection__Panda', {
-        projType: 'MDS',
-        projDim: 2,
-        mapInitDistMatrix: dcdDistMatrix
-      }, 'subProj = Projection(mapInitDistMatrix, projType, projDim)', projection => {
+        fileName: this.dataFiles.get('mapInitProjection')
+      }, 'subProj = PMLoad(fileName)', projection => {
         this.subTree.data.initProjection = projection
         df.resolve()
+      }, true, true)
+    },
+
+    test: function () {
+      this.trigger('SubMapCollection__Panda', {
+        projType: 'MDS',
+        projDim: 2
+      }, 'subProj = Projection(subDataDist, projType, projDim)', projection => {
+        this.testProjection = projection
       }, true, true)
     },
 

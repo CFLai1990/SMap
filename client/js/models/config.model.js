@@ -29,7 +29,7 @@ define([
       },
       'dataPath': 'data/Car.csv', // Iris.csv, Car.csv, 3DBall.csv, 2DPlanes.csv, swissroll.csv
       'currentData': 'Car',
-      'realTimeCompute': true,
+      'realTimeCompute': false,
       'distType': 'KNN', // "KNN", "Matrix"
       'glyphType': 'fan', // "fill", "fan", "stick"
       'gridType': 'hexagon',

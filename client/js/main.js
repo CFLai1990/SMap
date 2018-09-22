@@ -59,7 +59,7 @@ require.config({
     'basicViewOperations': 'libs/basicViewOperations',
     'Tiling': 'libs/tiling',
     'Tiling_v1': 'libs/tiling_v1',
-    'SubGlyph': 'libs/subglyph',
+    'SubGlyph': 'libs/subglyph_v0.1',
     'SubRotate': 'libs/subrotate',
     'HDPainter': 'libs/hdpainter',
     'PDHist': 'libs/pandaHist',

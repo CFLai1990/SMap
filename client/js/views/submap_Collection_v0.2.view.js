@@ -766,22 +766,9 @@ define(
           })
         }, // end of getDimCoverage
 
-        initVisible: function (
-            v_center,
-            v_ringDiameter,
-            v_glyphSize,
-            v_clsLevel,
-            v_colors
-          ) {
+        initVisible: function (v_center, v_ringDiameter, v_glyphSize, v_clsLevel, v_colors) {
           class visibleObj {
-            constructor (
-                v_this,
-                v_center,
-                v_ringDiameter,
-                v_glyphSize,
-                v_clsLevel,
-                v_colors
-              ) {
+            constructor (v_this, v_center, v_ringDiameter, v_glyphSize, v_clsLevel, v_colors) {
               let t_extent = [1, Math.sqrt(v_clsLevel) + 1],
                 t_maxLevel = Math.log(Math.pow(t_extent[1], 4)) / Math.log(2),
                 t_zoomer = d3.behavior
@@ -1209,348 +1196,6 @@ define(
             )
         },
 
-          /*              showTiling: function (v_df) {
-                          let t_this = this
-                          let t_renderMap = (v_df, v_g, v_glyphSize, v_colors) => {
-                            let t_makeNewMap = v_duration => {
-                                SubGlyph.init(
-                                                  v_glyphSize,
-                                                  v_glyphSize,
-                                                  Config.get('mapType'),
-                                                  Config.get('glyphType'),
-                                                  v_colors
-                                              )
-                                let t_g = v_g
-                                                  .selectAll('.SubMapGridRows')
-                                                  .data(t_grids)
-                                                  .enter()
-                                                  .append('g')
-                                                  .attr('class', 'SubMapGridRows')
-                                                  .selectAll('.SubMapGrids')
-                                                  .data(v_d => {
-                                                    return v_d
-                                                  })
-                                                  .enter()
-                                                  .append('g')
-                                                  .attr('class', 'SubMapGrids')
-                                                  .attr('index', v_grid => {
-                                                    if (v_grid.id == null) {
-                                                      return -1
-                                                    } else {
-                                                      if (t_indeces == null) {
-                                                        return v_grid.id
-                                                      } else {
-                                                        return t_indeces[v_grid.id]
-                                                      }
-                                                    }
-                                                  })
-                                                  .attr('gSize', v_glyphSize)
-                                                  .classed('empty', v_grid => {
-                                                    return v_grid.id == null
-                                                  })
-                                                  .attr('position', v_grid => {
-                                                    let t_pos = Basic.scale(t_scales, v_grid.pos)
-                                                    return t_pos.join('_')
-                                                  })
-                                                  .attr('transform', v_grid => {
-                                                    return (
-                                                          'translate(' + Basic.scale(t_scales, v_grid.pos) + ')'
-                                                    )
-                                                  })
-                                this.d3el
-                                                  .selectAll('.SubMapTiling')
-                                                  .attr('opacity', 0)
-                                                  .transition()
-                                                  .duration(v_duration)
-                                                  .attr('opacity', 1)
-                                t_g.call(function (v_gs) {
-                                  v_gs.forEach(vv_gs => {
-                                    vv_gs.forEach(vvv_gs => {
-                                      let tt_grid = d3.select(vvv_gs).data()[0],
-                                        t_pid = tt_grid.id,
-                                        t_col,
-                                        t_code = tt_grid.code
-                                      if (t_pid != null) {
-                                        t_col = v_colors[t_pid]
-                                        t_col = [~~(255 * t_col[0]), ~~(255 * t_col[1]), ~~(255 * t_col[2])]
-                                        t_col = 'rgb(' + t_col + ')'
-                                      } else {
-                                        t_col = '#fff'
-                                      }
-                                      let tt_nghIDs,
-                                        t_sPos = tt_grid.pos,
-                                        tt_div
-                                      switch (Config.get('gridType')) {
-                                        case 'hexagon':
-                                          tt_div = Math.PI * 2 / 6
-                                          tt_nghIDs = new Array(6)
-                                          for (let i = 0; i < 6; i++) {
-                                            tt_nghIDs[i] = {
-                                              angle: tt_div * i,
-                                              diff: null,
-                                              dist: null
-                                            }
-                                          }
-                                          break
-                                      }
-                                      if (t_pid != null) {
-                                        tt_grid.gridNeighbors.forEach(v_ngh => {
-                                          let t_ngh = t_grids[v_ngh[0]][v_ngh[1]],
-                                            tt_id = t_ngh.id,
-                                            tt_dist,
-                                            tt_diff,
-                                            t_nPos = t_ngh.pos,
-                                            t_divPos = [
-                                              t_nPos[0] - t_sPos[0],
-                                              t_nPos[1] - t_sPos[1]
-                                            ],
-                                            t_angle
-                                          if (tt_id != null) {
-                                            tt_dist = t_distMat[t_pid][tt_id]
-                                            tt_diff = t_diffMat[t_pid][tt_id]
-                                            if (Math.abs(t_divPos[0]) < Number.EPSILON) {
-                                              if (t_nPos[1] > t_sPos[1]) {
-                                                t_angle = Math.PI / 2
-                                              } else {
-                                                t_angle = -Math.PI / 2
-                                              }
-                                            } else {
-                                              let tanValue = t_divPos[1] / t_divPos[0]
-                                              t_angle = Math.atan(tanValue)
-                                              if (tanValue < 0) {
-                                                if (t_divPos[1] > 0) {
-                                                  t_angle += Math.PI
-                                                } else {
-                                                  t_angle += Math.PI * 2
-                                                }
-                                              } else {
-                                                if (tanValue > 0) {
-                                                  if (t_divPos[1] < 0) {
-                                                    t_angle += Math.PI
-                                                  }
-                                                } else {
-                                                  if (tanValue == 0) {
-                                                    if (t_divPos[0] > 0) {
-                                                      t_angle = 0
-                                                    } else {
-                                                      t_angle = Math.PI
-                                                    }
-                                                  }
-                                                }
-                                              }
-                                            }
-                                            let t_number = Math.round(t_angle / tt_div)
-                                            tt_nghIDs[t_number].dist = t_nghScale(tt_dist)
-                                            tt_nghIDs[t_number].diff = tt_diff
-                                          }
-                                        })
-                                      }
-                                      let t_weights = t_pid == null ? null : t_nghDims[t_pid],
-                                        t_parameters = [
-                                          d3.select(vvv_gs),
-                                          tt_nghIDs,
-                                          t_pid,
-                                          t_codes[t_pid],
-                                          t_col,
-                                          this.pattern,
-                                          t_weights,
-                                          t_nghDimExt
-                                        ]
-                                      if (t_pid == null) {
-                                        t_renderEmpty.add(t_parameters)
-                                      } else {
-                                        t_renderGrids.add(t_parameters)
-                                      }
-                                    })
-                                  })
-                                })
-                                t_renderEmpty.forEach(v_emptyPmt => {
-                                  let t_g = SubGlyph.showGlyph(...v_emptyPmt)
-                                })
-                                t_renderGrids.forEach(v_gridPmt => {
-                                  let t_g = SubGlyph.showGlyph(...v_gridPmt)
-                                  t_g.on('click', function (v_point) {
-                                    if (v_point.id == null) {
-                                      return
-                                    }
-                                    t_interactions.pinning(this, false)
-                                  })
-                                })
-                              },
-                              t_hideOldMap = v_df => {
-                                let t_time = this.visible.toLevel([0, 0], 0, t_longDuration),
-                                  t_df = $.Deferred()
-                                setTimeout(() => {
-                                  t_df.resolve()
-                                }, t_time)
-                                $.when(t_df).done(() => {
-                                  let t_midDuration = 0,
-                                    t_endDuration = 0
-                                  if (!this.isNew) {
-                                    t_midDuration = t_longDuration * 0.5
-                                    t_endDuration = t_longDuration
-                                    this.hideClusters(true, t_midDuration)
-                                    setTimeout(() => {
-                                      this.moveGrids(
-                                                              t_grids,
-                                                              t_scales,
-                                                              v_colors,
-                                                              v_glyphSize,
-                                                              t_endDuration
-                                                          )
-                                    }, 300)
-                                  }
-                                  setTimeout(() => {
-                                    v_df.resolve(t_midDuration)
-                                  }, t_endDuration * 0.8)
-                                })
-                              }
-                            let t_renderEmpty = new Set(),
-                              t_renderGrids = new Set(),
-                              t_nghDims = this.nghDims,
-                              t_nghDimExt = t_nghDims.extent,
-                              t_nghScale = d3.scale
-                                          .linear()
-                                          .domain([t_distExt.min, t_distExt.max])
-                                          .range([0, 0.8]),
-                              t_diffScale = d3.scale
-                                          .linear()
-                                          .domain([1, t_codeLength])
-                                          .range([0, v_glyphSize * Math.sqrt(3) * 2 / 3]),
-                              t_isTrans = !this.isNew,
-                              t_df = $.Deferred()
-                            t_hideOldMap(t_df)
-                            $.when(t_df).done(v_duration => {
-                              t_makeNewMap(v_duration)
-                              v_df.resolve()
-                            })
-                          }
-                          let t_interactions = this.interactions,
-                            t_filterCodes = this.fCodes,
-                            t_codes = t_filterCodes.codes,
-                            t_indeces = t_filterCodes.dataIndeces,
-                            t_dimIndeces = t_filterCodes.dimIndeces,
-                            t_dataLength = t_codes.length,
-                            t_codeLength = t_codes[0].length,
-                            t_filterMat = this.fMatrix,
-                            t_nghList = t_filterMat.neighbors,
-                            t_distMat = t_filterMat.distMat,
-                            t_diffMat = t_filterMat.diffMat,
-                            t_distExt = t_filterMat.distExt,
-                            t_colors = this.currentColors,
-                            t_scales = this.scales,
-                            t_map,
-                            t_grids,
-                            t_edges,
-                            t_longDuration = this.transition.long,
-                            t_shortDuration = this.transition.duration,
-                            t_mapChanged = !this.newData || this.zoomed
-                                // t_aggrRange = this.aggregate(t_codes, t_nghList);
-                                // let t_aggrScale = d3.scale.linear().domain(t_aggrRange).range([0,1]);
-                          if (!this.zoomed && this.overallMap != null) {
-                            t_map = this.overallMap
-                          } else {
-                            t_map = Tiling.getMap(
-                                          t_nghList,
-                                          t_distMat,
-                                          t_codes,
-                                          Config.get('gridType'),
-                                          Config.get('gridScaling')
-                                      )
-                                    // get the map layout
-                            console.log('Map: ', t_map)
-                            let submapLayout = Geometry.layout.submap(this.collection.subTree, t_distMat, t_codes, Config.get('gridType'), 2)
-                            submapLayout.getMap()
-                            console.log('newMap: ', submapLayout)
-                            if (!this.zoomed) {
-                              this.overallMap = t_map
-                            }
-                          }
-                          if (typeof t_map === 'string') {
-                                    // failed
-                            throw 'ERROR: ' + t_map
-                          }
-                          t_grids = t_map.grids
-                          t_edges = t_map.edges
-                          if (!this.freeDim) {
-                            this.freeDim = t_codeLength
-                          }
-                          let t_centerID = t_grids.getCenterPID(),
-                            t_colorScale = d3.scale
-                                      .linear()
-                                      .domain([0, 1])
-                                      .range([45, 315]) // hue channel
-                          if (this.zoomed) {
-                            let t_subColors = Basic.subArray(this.colors, t_indeces, [0, 1, 2])
-                            t_colors = SubRotate.groupMoveTo(t_colors, t_subColors) // rgb color;
-                          } else {
-                            if (!this.colorFixed) {
-                              this.colors = SubRotate.pointMoveTo(
-                                              t_colors,
-                                              t_centerID,
-                                              Config.get('centerColor')
-                                          ) // rgb color;
-                              this.colorFixed = true
-                            }
-                            t_colors = this.colors
-                          }
-                          this.informOthers('SubMapCollectionView__UpdateMap', {
-                            mapChanged: t_mapChanged,
-                            colors: t_mapChanged ? t_colors : this.colors,
-                            clusters: this.currentCls.clusters,
-                            selections: null,
-                            codes: t_codes,
-                            dimensions: this.collection.dimensions,
-                            dimIndeces: t_dimIndeces,
-                            dataIndeces: t_indeces
-                          })
-                          this.newData = false
-                          let t_center = [
-                              (t_scales.x.range()[1] + t_scales.x.range()[0]) * 0.5,
-                              (t_scales.y.range()[1] + t_scales.y.range()[0]) * 0.5
-                            ],
-                            t_dRing = [
-                              t_scales.x.range()[1] - t_scales.x.range()[0],
-                              t_scales.y.range()[1] - t_scales.y.range()[0]
-                            ],
-                            t_rSize = t_dRing[0] * 0.5 / t_grids.radius,
-                            t_clsLevel = this.currentCls.level,
-                            t_dfResetZoom = $.Deferred(),
-                            t_dfHdlOldMap = $.Deferred(),
-                            t_g
-                          if (!this.isNew) {
-                            let t_time = this.visible.toLevel([0, 0], 0, t_shortDuration)
-                            setTimeout(() => {
-                              t_dfResetZoom.resolve()
-                            }, t_time)
-                          } else {
-                            t_dfResetZoom.resolve()
-                          }
-                          $.when(t_dfResetZoom).done(() => {
-                            this.d3el
-                                          .select('.SubMapTiling')
-                                          .classed('SubMapTiling', false)
-                                          .classed('SubOldTiling', true)
-                            this.visible = this.initVisible(
-                                          t_center,
-                                          t_dRing[0],
-                                          t_rSize,
-                                          t_clsLevel,
-                                          t_colors
-                                      )
-                            t_g = this.visible.prepareContainer(this.d3el)
-                            t_renderMap(t_dfHdlOldMap, t_g, t_rSize, t_colors)
-                          })
-                          $.when(t_dfHdlOldMap).done(() => {
-                            this.showClusters(t_map, t_scales)
-                            this.visible.update([0, 0], 1.0)
-                            this.clsColorReady = true
-                            this.updateClusterInfo()
-                            this.isNew = false
-                            v_df.resolve()
-                          })
-                        }, // end of showTiling */
-
         renderNewMap: function (container, theMap, transDuration) {
           let filterCodes = this.fCodes
           let gridScales = this.scales
@@ -1611,7 +1256,6 @@ define(
             colorOCell = 'rgb(' + colorOCell + ')'
               // Step 2-2:   prepare the neighbors
             let centerCoords = cell.center.coordinates
-            let cellPosition = [centerCoords.x, centerCoords.y]
             let neighbors
             let angleUnit
             switch (Config.get('gridType')) {
@@ -1705,13 +1349,13 @@ define(
 
         showTiling: function (df) {
           let theMap
-          let mapGrids
+            /* let mapGrids */
             // Step 1:   get the map layout
           if (!this.zoomed && this.overallMap != null) {
             theMap = this.overallMap
           } else {
-            mapGrids = Tiling.getMap(this.fMatrix.neighbors, this.fMatrix.distMat, this.fCodes.codes, Config.get('gridType'), Config.get('gridScaling'))
-            console.log('Map: ', mapGrids)
+              /* mapGrids = Tiling.getMap(this.fMatrix.neighbors, this.fMatrix.distMat, this.fCodes.codes, Config.get('gridType'), Config.get('gridScaling'))
+              console.log('Map: ', mapGrids) */
               // get the map layout
             theMap = Geometry.layout.submap(this.collection.subTree, this.fMatrix.distMat, this.fCodes.codes, Config.get('gridType'), 1)
             theMap.getMap()
@@ -1727,8 +1371,8 @@ define(
           if (!this.freeDim) {
             this.freeDim = this.fCodes.codes[0].length
           }
-          let centerID = mapGrids.grids.getCenterPID()
-          /* let centerID = theMap.centerLeafName */
+          let centerID = this.collection.subTree.data.centerLeafName[0]
+            /* let centerID = theMap.centerLeafName */
           if (this.zoomed) {
             let colors = Basic.subArray(this.colors, this.fCodes.dataIndeces, [0, 1, 2])
             this.currentColors = SubRotate.groupMoveTo(this.currentColors, colors) // rgb color;
@@ -1739,6 +1383,7 @@ define(
             }
             this.currentColors = this.colors
           }
+            // Basic.printArray(this.currentColors)
             // Step 3:   inform others about the map
           let mapHasChanged = !this.newData || this.zoomed
           this.informOthers('SubMapCollectionView__UpdateMap', {
@@ -1887,229 +1532,174 @@ define(
           }, v_duration + 20)
         },
 
-        showClusters: function (v_map, v_scales) {
-          let t_getPathTree = (
-                v_cls,
-                v_paths,
-                v_currentLevel,
-                v_prev,
-                v_id
-              ) => {
-            let t_cls = new Array(),
-              t_out = new Array(),
-              t_returnCls = new Array()
-            for (let i = 0; i < v_cls.length; i++) {
-              if (v_cls[i].length != null) {
-                let t_simpleCls,
-                  t_prev = v_prev.slice(0)
-                t_prev.push(i)
-                t_simpleCls = t_getPathTree(
-                      v_cls[i],
-                      v_paths,
-                      v_currentLevel + 1,
-                      t_prev,
-                      i
-                    )
-                t_cls.push(t_simpleCls)
-                t_returnCls.push(...t_simpleCls)
-              } else {
-                t_returnCls.push(v_cls[i])
-                t_out.push(v_cls[i])
-              }
+        getContourTree: function (map, clusterIndices, contourTree, currentLevel, previousPath, idOThis) {
+          let cluster = []
+          let outlier = []
+          let returnedCluster = []
+          for (let i = 0; i < clusterIndices.length; i++) {
+            if (clusterIndices[i].length != null) {
+              let simpleCluster
+              let previousID = previousPath.slice(0)
+              previousID.push(i)
+              simpleCluster = this.getContourTree(map, clusterIndices[i], contourTree, currentLevel + 1, previousID, i)
+              cluster.push(simpleCluster)
+              returnedCluster.push(...simpleCluster)
+            } else {
+              returnedCluster.push(clusterIndices[i])
+              outlier.push(clusterIndices[i])
             }
-            if (t_cls.length > 0) {
-              let t_paths = Tiling.getGridClusters(v_map, t_cls)
-              v_paths[v_currentLevel].push({
-                previous: v_prev,
-                selfID: v_id + '',
-                paths: t_paths,
-                ids: t_cls,
-                outlier: false
+          }
+          if (cluster.length > 0) {
+            let paths = map.getClusterContours(cluster)
+            contourTree[currentLevel].push({
+              previous: previousPath,
+              selfID: idOThis + '',
+              paths: paths,
+              ids: cluster,
+              outlier: false
+            })
+          }
+          return returnedCluster
+        }, // end of getContourTree
+
+        renderPaths: function (clusterIndicesPaths, classNames, previousPath, isOutlier, scales) {
+          let interactions = this.interactions
+          let clusterLevel = previousPath.length
+          let cluster = this.d3el
+              .select('.SubMapTiling')
+              .selectAll('.' + classNames)
+              .data(clusterIndicesPaths)
+              .enter()
+              .append('g')
+              .attr('class', (d, index) => {
+                return 'SubMapClusters ' + classNames + '_' + index + (isOutlier ? ' Outliers' : '')
               })
-            }
-            if (v_currentLevel < v_paths.length && t_out.length > 0) {
-              t_out = [t_out]
-              let t_outPaths = Tiling.getGridClusters(v_map, t_out)
-              v_paths[v_currentLevel].push({
-                previous: v_prev,
-                selfID: v_id + '',
-                paths: t_outPaths,
-                ids: t_out,
-                outlier: t_cls.length > 0
+              .attr('clsID', (d, index) => {
+                return [...previousPath, index].join('_')
               })
-            }
-            return t_returnCls
-          },
-            t_renderPaths = (v_clsPaths, v_classNames, v_prev, v_isOut) => {
-              let t_clsLevel = v_prev.length,
-                t_cls = this.d3el
-                  .select('.SubMapTiling')
-                  .selectAll('.' + v_classNames)
-                  .data(v_clsPaths)
-                  .enter()
-                  .append('g')
-                  .attr('class', (v_d, v_i) => {
-                    let t_extra = v_isOut ? ' Outliers' : ''
-                    return (
-                      'SubMapClusters ' + v_classNames + '_' + v_i + t_extra
-                    )
-                  })
-                  .attr('clsID', (v_d, v_i) => {
-                    return [...v_prev, v_i].join('_')
-                  })
-                  .attr('fill-opacity', 0.0)
-                  .on('mouseover', function (v_d, v_i) {
-                    let t_clsID = d3.select(this).attr('clsID')
-                    if (t_interactions.hoveredID != t_clsID) {
-                      t_interactions.hoveredID = t_clsID
-                      t_interactions.mouseOver(this, v_isOut)
-                    }
-                  })
-                  .on('mouseout', (v_d, v_i) => {
-                    t_interactions.hoveredID = null
-                    t_interactions.mouseOut(v_isOut)
-                  })
-                  .on('click', function (v_d, v_i) {
-                    Basic.delay('clickPinning', 400, () => {
-                      t_interactions.pinning(this)
-                    })
-                  })
-                  .on('dblclick', (v_d, v_i) => {
-                    Basic.clearDelay('clickPinning')
-                    if (!v_isOut) {
-                      this.visible.toLevel(
-                        v_d.center,
-                        v_d.clsLevel + 1,
-                        this.transition.long
-                      )
-                    }
-                  })
-              t_cls.call(v_gs => {
-                v_gs[0].forEach(v_g => {
-                  let t_clusterPaths = d3.select(v_g).data()[0],
-                    t_paths = new Array(),
-                    t_lines = new Array(),
-                    t_rangePath = new Array(),
-                    t_rangePts,
-                    t_diameter = 0
-                    // draw block paths
-                  for (let i = 0; i < t_clusterPaths.paths.length; i++) {
-                    let t_clusterPath = t_clusterPaths.paths[i]
-                    try {
-                      let t_test = Basic.scale(v_scales, t_clusterPath[0])
-                    } catch (err) {
-                      console.error(err, t_clusterPaths)
-                    }
-                    let t_pt = Basic.scale(v_scales, t_clusterPath[0]),
-                      t_path = 'M' + t_pt
-                    for (let j = 1; j < t_clusterPath.length; j++) {
-                      let t_pt_j = Basic.scale(v_scales, t_clusterPath[j])
-                      t_path += ' L' + t_pt_j
-                      t_rangePath.push(t_pt_j)
-                    }
-                    t_paths.push(t_path)
-                  }
-                  for (let i = 0; i < t_rangePath.length - 1; i++) {
-                    for (let j = i + 1; j < t_rangePath.length; j++) {
-                      let t_dist = Basic.getDistance(
-                          t_rangePath[i],
-                          t_rangePath[j]
-                        )
-                      if (t_dist > t_diameter) {
-                        t_diameter = t_dist
-                        t_rangePts = [i, j]
-                      }
-                    }
-                  }
-                  for (let i = 0; i < t_rangePts.length; i++) {
-                    t_rangePts[i] = t_rangePath[t_rangePts[i]]
-                  }
-                  t_clusterPaths.center = Basic.getMeanVector(
-                      t_rangePts,
-                      false
-                    )
-                  t_clusterPaths.diameter = t_diameter
-                  t_clusterPaths.clsLevel = t_clsLevel
-                  d3
-                      .select(v_g)
-                      .selectAll('path')
-                      .data(t_paths)
-                      .enter()
-                      .append('path')
-                      .attr('d', vv_path => {
-                        return vv_path
-                      })
-                    // draw edge lines
-                  if (!d3.select(v_g).classed('Outliers')) {
-                    d3
-                        .select(v_g)
-                        .append('g')
-                        .attr('class', 'SubClsPaths')
-                        .selectAll('.SubClsPath')
-                        .data(t_clusterPaths.lines)
-                        .enter()
-                        .append('g')
-                        .attr('class', 'SubClsPath')
-                        .each(function (v_pathPoints, v_i) {
-                          let t_start = Basic.scale(v_scales, v_pathPoints[0]),
-                            t_end = Basic.scale(v_scales, v_pathPoints[1]),
-                            t_line = [t_start, t_end].join('_')
-                          d3
-                            .select(this)
-                            .attr('pos', t_line)
-                            .selectAll('line')
-                            .data(v_pathPoints)
-                            .enter()
-                            .append('line')
-                            .attr('x1', v_line => {
-                              return t_start[0]
-                            })
-                            .attr('y1', v_line => {
-                              return t_start[1]
-                            })
-                            .attr('x2', v_line => {
-                              return t_end[0]
-                            })
-                            .attr('y2', v_line => {
-                              return t_end[1]
-                            })
-                            .attr('stroke', '#666')
-                        })
-                  }
+              .attr('fill-opacity', 0.0)
+              .on('mouseover', function (d, index) {
+                let clusterID = d3.select(this).attr('clsID')
+                if (interactions.hoveredID !== clusterID) {
+                  interactions.hoveredID = clusterID
+                  interactions.mouseOver(this, isOutlier)
+                }
+              })
+              .on('mouseout', (d, index) => {
+                interactions.hoveredID = null
+                interactions.mouseOut(isOutlier)
+              })
+              .on('click', function (d, index) {
+                Basic.delay('clickPinning', 400, () => {
+                  interactions.pinning(this)
                 })
               })
-            }
-          let t_this = this,
-            t_interactions = this.interactions,
-            t_clsPaths = new Array(),
-            t_levels = this.currentCls.level
-          if (!this.zoomed && this.overallCls.paths != null) {
-            t_clsPaths = this.currentCls.paths
-          } else {
-            let t_cls = this.currentCls.clusters
-            for (let i = 0; i < t_levels; i++) {
-              t_clsPaths.push(new Array())
-            }
-            t_getPathTree(t_cls, t_clsPaths, 0, [], null)
-            this.currentCls.paths = t_clsPaths
+              .on('dblclick', (d, index) => {
+                Basic.clearDelay('clickPinning')
+                if (!isOutlier) {
+                  this.visible.toLevel(d.center, d.clsLevel + 1, this.transition.long)
+                }
+              })
+          let renderFunction = function (edge, index) {
+            let startCoordinates = [edge.start.coordinates.x, edge.start.coordinates.y]
+            let endCoordinates = [edge.end.coordinates.x, edge.end.coordinates.y]
+            let start = Basic.scale(scales, startCoordinates)
+            let end = Basic.scale(scales, endCoordinates)
+            let line = [start, end].join('_')
+            d3.select(this)
+                .attr('pos', line)
+                .selectAll('line')
+                .data([edge])
+                .enter()
+                .append('line')
+                .attr('x1', start[0])
+                .attr('y1', start[1])
+                .attr('x2', end[0])
+                .attr('y2', end[1])
+                .attr('stroke', '#666')
           }
-          for (let i = t_clsPaths.length; i > 0; i--) {
-            let t_clsLevel = t_clsPaths[i - 1]
-            for (let j = 0; j < t_clsLevel.length; j++) {
-              let t_pathData = t_clsLevel[j],
-                t_paths = t_pathData.paths,
-                t_prev = t_pathData.previous,
-                t_isOut = t_pathData.outlier
-              t_renderPaths(
-                  t_paths,
-                  'SubCls' + t_prev.join('_'),
-                  t_prev,
-                  t_isOut
-                )
+          cluster.call(clsContainers => {
+            clsContainers[0].forEach(clsContainer => {
+              let clusterPaths = d3.select(clsContainer).data()[0]
+              let paths = []
+              let rangePath = []
+              let rangePts
+              let diameter = 0
+                // draw block paths
+              for (let i = 0; i < clusterPaths.paths.length; i++) {
+                let clusterPath = clusterPaths.paths[i]
+                let pathPoints = clusterPath.points
+                let startPoint = Basic.scale(scales, [pathPoints[0].coordinates.x, pathPoints[0].coordinates.y])
+                let path = 'M' + startPoint
+                for (let j = 1; j < pathPoints.length; j++) {
+                  let point = Basic.scale(scales, [pathPoints[j].coordinates.x, pathPoints[j].coordinates.y])
+                  path += ' L' + point
+                  rangePath.push(point)
+                }
+                if (clusterPath.closed) {
+                  path += 'L' + startPoint
+                }
+                paths.push(path)
+              }
+              for (let i = 0; i < rangePath.length - 1; i++) {
+                for (let j = i + 1; j < rangePath.length; j++) {
+                  let distance = Basic.getDistance(rangePath[i], rangePath[j])
+                  if (distance > diameter) {
+                    diameter = distance
+                    rangePts = [i, j]
+                  }
+                }
+              }
+              for (let i = 0; i < rangePts.length; i++) {
+                rangePts[i] = rangePath[rangePts[i]]
+              }
+              clusterPaths.center = Basic.getMeanVector(rangePts, false)
+              clusterPaths.diameter = diameter
+              clusterPaths.clsLevel = clusterLevel
+              d3.select(clsContainer)
+                  .selectAll('path')
+                  .data(paths)
+                  .enter()
+                  .append('path')
+                  .attr('d', p => { return p })
+                // draw edge lines
+              if (!d3.select(clsContainer).classed('Outliers')) {
+                d3.select(clsContainer)
+                    .append('g')
+                    .attr('class', 'SubClsPaths')
+                    .selectAll('.SubClsPath')
+                    .data(clusterPaths.lines)
+                    .enter()
+                    .append('g')
+                    .attr('class', 'SubClsPath')
+                    .each(renderFunction)
+              }
+            })
+          })
+        }, // end of renderPaths
+
+        showClusters: function (map, scales) {
+          let clusterPaths = []
+          let levels = this.currentCls.level
+          if (!this.zoomed && this.overallCls.paths != null) {
+            clusterPaths = this.currentCls.paths
+          } else {
+            let cluster = this.currentCls.clusters
+            for (let i = 0; i < levels; i++) {
+              clusterPaths.push([])
+            }
+            this.getContourTree(map, cluster, clusterPaths, 0, [], null)
+            this.currentCls.paths = clusterPaths
+          }
+          for (let i = clusterPaths.length; i > 0; i--) {
+            let clusterLevel = clusterPaths[i - 1]
+            for (let j = 0; j < clusterLevel.length; j++) {
+              let pathData = clusterLevel[j]
+              this.renderPaths(pathData.paths, 'SubCls' + pathData.previous.join('_'), pathData.previous, pathData.outlier, scales)
             }
           }
           this.updateClusterInfo()
-        },
+        }, // end of showClusters
 
         updateClusterInfo: function (v_init = true) {
           if (!this.clsColorReady) {
