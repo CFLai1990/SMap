@@ -387,6 +387,7 @@ define([
       // Step 1:   rough carve
       this.roughCarving()
       // Step 2:   fine carve
+      this.moveBasedOnDistance = true
       this.fineCarving()
     } // end of seamCarving
 
@@ -566,91 +567,78 @@ define([
       // block the center
       // cellEnergy.set(centerPosition.i + '_' + centerPosition.j, Infinity)
       // Step 2:   try to move the cells
-      let failed = false
-      let moveDistances = []
-      let oldCellEnergy = new Map([...cellEnergy])
-      let newCellsODCD = new Map()
-      let distanceStep = 1
-      while (!failed) {
-        failed = true
-        let newCellEnergy = new Map([...oldCellEnergy])
-        for (let i = 0; i < moveOrders.length; i++) {
-          if (moveDistances[i] == null) {
-            moveDistances[i] = 0
-          }
-          moveDistances[i] = moveDistances[i] + distanceStep
-          let ID = moveOrders[i][0]
-          let newCells = newCellsODCD.get(ID)
-          let originalCells = cellsODCD.get(ID)
-          if (newCells == null) {
-            newCells = []
-            for (let cell of originalCells) {
-              newCells.push([cell[0], cell[1]])
+      if (this.moveBasedOnDistance) {
+        for (let order of moveOrders) {
+          let ID = order[0]
+          let vector = this.tryToMove(cellEnergy, cellsODCD.get(ID), moveDirections.get(ID))
+          if (ID === 'leaves') {
+            for (let dcdInfo of this.dcdTraversalOrder) {
+              if (dcdInfo[1] === -1) {
+                moveVectors.set('leaf_' + dcdInfo[0], vector)
+              }
             }
+          } else {
+            moveVectors.set(ID, vector)
           }
-          let failedOThis = this.tryToMove(true, moveDistances[i], moveDirections.get(ID), distanceStep, carveNode, newCellEnergy, originalCells, newCells)
-          newCellsODCD.set(ID, newCells)
-          if (failedOThis) {
-            moveDistances[i] = moveDistances[i] - distanceStep
-          }
-          failed = !((!failed) || (!failedOThis))
         }
-        if (!failed) {
-          oldCellEnergy = new Map([...newCellEnergy])
-        }
-      }
-      cellEnergy = new Map([...oldCellEnergy])
-      for (let i = 0; i < moveOrders.length; i++) {
-        let ID = moveOrders[i][0]
-        let vector = this.tryToMove(false, moveDistances[i], moveDirections.get(ID), distanceStep)
-        if (ID === 'leaves') {
-          for (let dcdInfo of this.dcdTraversalOrder) {
-            if (dcdInfo[1] === -1) {
-              moveVectors.set('leaf_' + dcdInfo[0], vector)
-            }
+      } else {
+        // first move the children
+        for (let dcdInfo of this.dcdTraversalOrder) {
+          if (dcdInfo[1] !== -1) { // this is a child
+            let ID = 'child_' + dcdInfo[0]
+            let vector = this.tryToMove(cellEnergy, cellsODCD.get(ID), moveDirections.get(ID))
+            moveVectors.set(ID, vector)
           }
-        } else {
-          moveVectors.set(ID, vector)
+        }
+        // then move the leaves
+        let vector = this.tryToMove(cellEnergy, cellsODCD.get('leaves'), moveDirections.get('leaves'))
+        for (let dcdInfo of this.dcdTraversalOrder) {
+          if (dcdInfo[1] === -1) { // this is a direct leaf
+            moveVectors.set('leaf_' + dcdInfo[0], vector)
+          }
         }
       }
       return moveVectors
     } // end of getFineCarvingVectors
 
-    tryToMove (trying, distance, direction, step, tryNode, cellEnergy, cells, newCells) {
-      // Step 1:   prepare the moving vector
+    tryToMove (cellEnergy, cells, direction) {
+      // Step 1:   clear its own energies
+      for (let cell of cells) {
+        cellEnergy.set(cell.join('_'), 0)
+      }
+      // Step 2:   try to move
       let moveValues = [0, 0]
+      let moveDistance = 0
       let failed = false
-      let directionDistance = Math.sqrt(Math.pow(direction[0], 2) + Math.pow(direction[1], 2))
-      moveValues[0] = Math.round(distance / directionDistance * direction[0])
-      moveValues[1] = Math.round(distance / directionDistance * direction[1])
-      if (!trying) {
-        return moveValues
-      } else {
-        // Step 2:   clear its own energies
-        for (let newCell of newCells) {
-          cellEnergy.set(newCell.join('_'), 0)
-        }
-        newCells.splice(0, newCells.length) // clear the array, note that 'newCells = []' doesn't work
-        // Step 3:   try the new positions
-        for (let cell of cells) {
-          let newCell = tryNode.tryToMove(cell, moveValues)
-          if (cellEnergy.get(newCell.join('_')) !== 0) {
-            failed = true
-            break
+      if (!(direction[0] === 0 && direction[1] === 0)) {
+        let directionDistance = Math.sqrt(Math.pow(direction[0], 2) + Math.pow(direction[1], 2))
+        while (!failed) {
+          moveDistance++
+          moveValues[0] = Math.round(moveDistance / directionDistance * direction[0])
+          moveValues[1] = Math.round(moveDistance / directionDistance * direction[1])
+          // try the new positions
+          for (let cell of cells) {
+            let newCell = []
+            newCell[0] = cell[0] + moveValues[0]
+            newCell[1] = cell[1] + moveValues[1]
+            if (cellEnergy.get(newCell.join('_')) !== 0) {
+              failed = true
+              moveDistance--
+              moveValues[0] = Math.round(moveDistance / directionDistance * direction[0])
+              moveValues[1] = Math.round(moveDistance / directionDistance * direction[1])
+              break
+            }
           }
         }
-        // Step 4:   update the energies
-        if (failed) {
-          moveValues[0] = Math.round((distance - step) / directionDistance * direction[0])
-          moveValues[1] = Math.round((distance - step) / directionDistance * direction[1])
-        }
-        for (let cell of cells) {
-          let newCell = tryNode.tryToMove(cell, moveValues)
-          cellEnergy.set(newCell.join('_'), Infinity)
-          newCells.push(newCell)
-        }
-        return failed
       }
+      // Step 3:   update the energies
+      for (let cell of cells) {
+        let newCell = []
+        newCell[0] = cell[0] + moveValues[0]
+        newCell[1] = cell[1] + moveValues[1]
+        cellEnergy.set(newCell.join('_'), Infinity)
+      }
+      return moveValues
     } // end of tryToMove
 
     roughCarving () {

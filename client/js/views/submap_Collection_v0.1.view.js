@@ -2200,6 +2200,7 @@ define(
                     clsID: t_this.attr('clsID'),
                     visible: t_findVisible(t_clsID)
                   }
+                console.log(t_info)
                 if (t_centers[t_cid] == undefined) {
                   t_centers[t_cid] = []
                 }

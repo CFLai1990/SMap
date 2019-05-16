@@ -15,6 +15,12 @@ define([
 ], function (require, Mn, _, $, Backbone, Datacenter, Config, Base, Hdpainter, loadBasic, loadBasicView, MST, SubMap_ModelView) {
   'use strict'
 
+  let VersionControl = {
+    one: true, // this view shows a single projection
+    two: false // this view shows all cluster-based projections
+        // two is not usable due to interaction reasons (zoom in / zoom out)
+  }
+
   String.prototype.visualLength = function (d) {
     var ruler = $('#ruler')
     ruler.css('font-size', d + 'px').text(this)
@@ -56,10 +62,13 @@ define([
         },
         defaultCode: null,
         defaultProjection: null,
-        subspaceProjections: new Map(),
+        clusterFeatureSubspaces: new Map(),
+        clusterFeatureProjections: new Map(),
+        clusterDimensionWeights: new Map(),
         defaultReady: null,
         fontSize: 12,
         ready: false,
+        hidden: false,
         hover: {
           timer: null,
           time: 1500,
@@ -121,17 +130,16 @@ define([
         t_height = parseFloat($('#Projection_CollectionViewSVG').css('height')),
         t_scale = this.size / this.canvasSize,
         t_translate = [t_width / 2, t_height / 2]
-      d3.select('#Projection_CollectionView')
-                .attr('transform', 'translate(' + t_translate + ')scale(' + t_scale + ')')
     },
 
     bindAll: function () {
-      this.listenTo(Datacenter, 'SubMapCollectionView__DimensionFiltering', this.getDefaultProjection)
+      this.listenTo(Datacenter, 'SubMapCollectionView__DimensionFiltering', this.getDefaultProjection) // not used anymore
       this.listenTo(Datacenter, 'SubMapCollectionView__ShowProjection', this.getProjection)
       this.listenTo(Datacenter, 'SubMapCollectionView__DefaultProjection', this.restoreProjection)
+      this.listenTo(Datacenter, 'SubMapCollectionView__ClearProjection', this.clearProjection)
       this.listenTo(Datacenter, 'SubMapCollectionView__HideProjection', this.hideProjection)
-      this.listenTo(Datacenter, 'SubMapCollectionView__InitClusters', this.showClusters)
-      this.listenTo(Datacenter, 'SubMapCollectionView__UpdateClusters', this.updateClusters)
+      this.listenTo(Datacenter, 'SubMapCollectionView__InitClusters', this.initClusters)
+      this.listenTo(Datacenter, 'SubMapCollectionView__ShowCluster', this.showCluster)
       this.listenTo(Datacenter, 'SubMapCollectionView__Highlighting', this.updateHighlighting)
             // this.listenTo(Datacenter, "SubMapCollectionView__Choose", this.updateHighlighting_v0);
             // this.listenTo(Datacenter, "SubMapCollectionView__Pin", this.updatePinning);
@@ -157,15 +165,24 @@ define([
     },
 
     restoreProjection: function () {
+      this.hideProjection(false)
       this.collection.getProjection(this.defaultCode)
     },
 
     getProjection: function (v_code) {
+      this.hideProjection(false)
       this.collection.getProjection(v_code)
     },
 
-    hideProjection: function () {
+    clearProjection: function () {
       this.d3el.selectAll('g').remove()
+    },
+
+    hideProjection: function (hidden) {
+      if (hidden !== this.hidden) {
+        this.hidden = hidden
+        BasicView.hide('projectionViewHider', this.d3el, 400, hidden)
+      }
     },
 
     updateProjection: function (v_proj) {
@@ -206,302 +223,64 @@ define([
       }
     },
 
-    showClusters: function (t_clsInfo) {
-      if (this.defaultProjection == null) {
-        if (this.defaultReady == null) {
-          this.defaultReady = $.Deferred()
-          $.when(this.dafaultReady).done(() => {
-            this.showClusters(t_clsInfo)
-            this.defaultReady = null
-          })
-        }
-        return
-      };
+    getFeatureSubspaces: function (clsFeatSub, clsDimWgt, clsInfo) {
       let weightThresholds = { low: 0.1, high: 0.9 }
-      let clsSubCodes = new Map()
-      let t_maxSize = 100,
-        t_this = this,
-        t_distFunc = (a, b) => { return (a[0] - b[0]) * (a[0] - b[0]) + (a[1] - b[1]) * (a[1] - b[1]) }
-      let t_getParameters = (v_centers, v_counts) => {
-          let t_length = v_counts.length,
-            t_positions = Basic.initArray(t_length, 2),
-            t_sizes = new Array(t_length),
-            t_sortedCounts = Basic.sortVector(v_counts, false),
-            t_maxCount = t_sortedCounts.value[0],
-            t_maxInd = t_sortedCounts.index[0],
-            t_centers = new Array(),
-            t_edges = MST.euclideanMST(v_centers, t_distFunc),
-            t_ready = new Array(t_length).fill(false)
-          let t_handlePoint = (v_i) => {
-            let t_selfCenter = v_centers[v_i],
-              t_selfPosition = t_positions[v_i],
-              t_selfSize = t_sizes[v_i]
-            for (let i = 0; i < t_edges.length; i++) {
-              let t_edge_i = t_edges[i],
-                t_next
-              if (t_edge_i[0] == v_i) {
-                t_next = t_edge_i[1]
-              }
-              if (t_edge_i[1] == v_i) {
-                t_next = t_edge_i[0]
-              }
-              if (t_next == undefined || t_ready[t_next]) {
-                continue
-              } else {
-                let t_angle = Basic.getAngle(t_selfCenter, v_centers[t_next]),
-                  t_size = t_sizes[t_next] = v_counts[t_next] / t_maxCount * t_maxSize,
-                  t_r = t_size + t_selfSize
-                t_positions[t_next] = [t_selfPosition[0] + t_r * Math.cos(t_angle), t_selfPosition[1] + t_r * Math.sin(t_angle)]
-                t_ready[t_next] = true
-                t_handlePoint(t_next)
-              }
+      let dimNumber = -1
+      let defaultSubCode = 1 // the dimension is set to 1 by default
+      for (let i = 0; i < clsInfo.length; i++) {
+        let levelInfo = clsInfo[i]
+                // for clusters in each level
+        for (let j = 0; j < levelInfo.length; j++) {
+          let cls = levelInfo[j]
+                    // set the dimension number
+          if (dimNumber < 0) {
+            dimNumber = cls.weights.length
+          }
+                    // get the average dimension weights
+          let dimWeights = numeric.div(cls.weights, cls.count)
+          let featureSubCode = new Array(dimNumber)
+          featureSubCode.fill(defaultSubCode)
+          for (let k = 0; k < dimNumber; k++) {
+            if (dimWeights[k] < weightThresholds.low) {
+              featureSubCode[k] = 0 // featured low dimension
+            }
+            if (dimWeights[k] > weightThresholds.high) {
+              featureSubCode[k] = 1 // featured high dimension
             }
           }
-          t_positions[t_maxInd] = [0, 0]
-          t_sizes[t_maxInd] = t_maxSize
-          t_ready[t_maxInd] = true
-          t_handlePoint(t_maxInd)
-          return {
-            position: t_positions,
-            size: t_sizes,
-            edge: t_edges
-          }
-        },
-        t_renderClsBox_level = (v_levelInfo, v_level, v_g, v_hidden = true) => {
-          let t_centers = new Array(),
-            t_counts = new Array(),
-            t_boundingBox = [
-                            [Infinity, -Infinity],
-                            [Infinity, -Infinity]
-            ],
-            t_dimNum = v_levelInfo[0].weights.length,
-            t_divAngle = 2 * Math.PI / t_dimNum
-          for (let i = 0; i < v_levelInfo.length; i++) {
-            let t_info = v_levelInfo[i]
-            t_centers.push(t_info.center)
-            t_counts.push(t_info.count)
-          }
-          let t_parameters = t_getParameters(t_centers, t_counts),
-            t_g = v_g.append('g')
-                        .attr('class', 'ClsLevelProjection')
-                        .attr('id', 'ClsLevelProjection_' + v_level)
-                        .attr('display', v_hidden ? 'none' : 'block')
-          let t_projBoxes = t_g.selectAll('.ClsProjection')
-                        .data(v_levelInfo)
-                        .enter()
-                        .append('g')
-                        .attr('class', 'ClsProjection')
-                        .attr('clsID', (v_d) => {
-                          return v_d.clsID.join('_')
-                        })
-                        .attr('id', (v_d) => {
-                          return 'ClsProjection_' + v_d.clsID.join('_')
-                        })
-          for (let i = 0; i < v_levelInfo.length; i++) {
-            let t_r = t_parameters.size[i],
-              t_center = t_parameters.position[i]
-            if (t_center[0] - t_r < t_boundingBox[0][0]) {
-              t_boundingBox[0][0] = t_center[0] - t_r
-            }
-            if (t_center[0] + t_r > t_boundingBox[0][1]) {
-              t_boundingBox[0][1] = t_center[0] + t_r
-            }
-            if (t_center[1] - t_r < t_boundingBox[1][0]) {
-              t_boundingBox[1][0] = t_center[1] - t_r
-            }
-            if (t_center[1] + t_r > t_boundingBox[1][1]) {
-              t_boundingBox[1][1] = t_center[1] + t_r
-            }
-          }
-          let t_center = Basic.getMeanVector(t_boundingBox, true),
-            t_sizes = [(t_boundingBox[0][1] - t_boundingBox[0][0]) / 0.9, (t_boundingBox[1][1] - t_boundingBox[1][0]) / 0.9],
-            t_scale = this.canvasSize / d3.max(t_sizes),
-            t_swidth = 5 / t_scale
-                    // circles
-          t_projBoxes.append('circle')
-                        .attr('cx', (v_d, v_i) => {
-                          return t_parameters.position[v_i][0]
-                        })
-                        .attr('cy', (v_d, v_i) => {
-                          return t_parameters.position[v_i][1]
-                        })
-                        .attr('r', (v_d, v_i) => {
-                          return t_parameters.size[v_i] - t_swidth / (2 * (v_level + 1))
-                        })
-                        // 注意，这里的size和半径成正比了，会导致对面积的perception出错
-                        .attr('fill', (v_d, v_i) => {
-                          return BasicView.colToRgb(v_levelInfo[v_i].color)
-                        })
-                        .attr('fill-opacity', 0.4)
-                        .attr('stroke', (v_d, v_i) => {
-                          /* return BasicView.colToRgb(v_levelInfo[v_i].color) */
-                          return '#666'
-                        })
-                        .attr('stroke-width', (v_d, v_i) => {
-                          return t_swidth * 0.3 / (v_level + 1)
-                        })
-                        .attr('opacity', 0.5)
-                    // paths
-          t_projBoxes
-                        .each(function (v_d, v_i) {
-                          let t_weights = v_levelInfo[v_i].weights,
-                            t_r = t_parameters.size[v_i],
-                            t_color = BasicView.colToRgb(v_levelInfo[v_i].color),
-                            t_gapAngle = Math.PI / 18
-                          let t_g = d3.select(this)
-                                .append('g')
-                                .attr('transform', 'translate(' + t_parameters.position[v_i] + ')')
-                                .attr('class', 'projG')
-                            // test here
-                          t_weights = numeric.div(t_weights, v_d.count)
-                          let clsSubCode = []
-                          for (let i = 0; i < t_weights.length; i++) {
-                            if (t_weights[i] < weightThresholds.low) {
-                              clsSubCode[i] = 0
-                            } else {
-                              clsSubCode[i] = 1
-                            }
-                          }
-                          clsSubCodes.set(v_d.clsID, clsSubCode)
-                          let t_colorScale = d3.scale.linear().domain([1, 0])
-                                .interpolate(d3.interpolateHcl)
-                                .range([d3.rgb('#000'), d3.rgb('#fff')])
-                          let t_dimCircles = t_g.selectAll('.circleDimension')
-                                .data(t_weights)
-                                .enter()
-                                .append('g')
-                                .attr('transform', (d, i) => {
-                                  let angle = (i - 1) * t_divAngle
-                                  let r = t_r - t_swidth / (2 * (v_level + 1))
-                                  return 'translate(' + [r * Math.cos(angle), r * Math.sin(angle)] + ')'
-                                })
-                          t_dimCircles.append('circle')
-                                .attr('cx', 0)
-                                .attr('cy', 0)
-                                .attr('r', (d, i) => {
-                                  return t_swidth * 0.5 / (v_level + 1)
-                                })
-                                .attr('stroke', 'none')
-                                .attr('fill', (d, i) => {
-                                  return t_colorScale(d)
-                                })
-                          t_dimCircles.append('circle')
-                                .attr('cx', 0)
-                                .attr('cy', 0)
-                                .attr('r', (d, i) => {
-                                  if (d < weightThresholds.low || d > weightThresholds.high) {
-                                    return t_swidth * 0.8 / (v_level + 1)
-                                  } else {
-                                    return 0
-                                  }
-                                })
-                                .attr('fill', 'none')
-                                .attr('stroke', '#000')
-                                .attr('stroke-width', 2)
-                            /*                        t_g.selectAll("path")
-                                                    .data(t_weights)
-                                                    .enter()
-                                                    .append("path")
-                                                    .attr("d", (vv_d, vv_i)=>{
-                                                        let t_range = (vv_d * t_divAngle - t_gapAngle),
-                                                            t_arc = d3.svg.arc()
-                                                            .innerRadius(t_r - t_swidth)
-                                                            .outerRadius(t_r)
-                                                            .startAngle(vv_i * t_divAngle + 0.5 * t_divAngle - t_range / 2)
-                                                            .endAngle(vv_i * t_divAngle + 0.5 * t_divAngle + t_range / 2);
-                                                        return t_arc();
-                                                    })
-                                                    .attr("fill", t_color);
-                                                    t_g.selectAll("line")
-                                                    .data(t_weights)
-                                                    .enter()
-                                                    .append("line")
-                                                    .attr("x1", (vv_d, vv_i)=>{return (t_r - t_swidth) * Math.cos(vv_i * t_divAngle);})
-                                                    .attr("x2", (vv_d, vv_i)=>{return t_r * Math.cos(vv_i * t_divAngle);})
-                                                    .attr("y1", (vv_d, vv_i)=>{return (t_r - t_swidth) * Math.sin(vv_i * t_divAngle);})
-                                                    .attr("y2", (vv_d, vv_i)=>{return t_r * Math.sin(vv_i * t_divAngle);})
-                                                    .attr("stroke","#fff")
-                                                    .attr("stroke-width", t_swidth / 2); */
-                            // get subspace projections
-                            // test here
-                        })
-          let clsProjMap = t_this.subspaceProjections
-          let defaultProj = t_this.defaultProjection
-          let dataArray = Config.get('data').array
-          if (clsProjMap.size === 0) {
-            let defer = $.Deferred()
-            t_this.collection.getClusterSubspaceProjection(clsSubCodes, clsProjMap, defer)
-            $.when(defer).done(() => {
-              t_projBoxes
-                                .each(function (d, i) {
-                                  let tR = t_parameters.size[i]
-                                  let g = d3.select(this).selectAll('.projG')
-                                  let cords = clsProjMap.get(d.clsID)
-                                  let proj = numeric.dot(dataArray, cords)
-                                  /* let proj = defaultProj */
-                                  t_this.showProjection(g, tR - t_swidth / (v_level + 1), proj, v_levelInfo[i].data)
-                                })
-            })
-          }
-                    // edges
-                    // t_g.append("g")
-                    // .attr("class","ClsEdges")
-                    // .selectAll(".edges")
-                    // .data(t_parameters.edge)
-                    // .enter()
-                    // .append("g")
-                    // .attr("class", "ClsEdge")
-                    // .append("line")
-                    // .attr("x1", (v_e)=>{
-                    //     return t_parameters.position[v_e[0]][0];
-                    // })
-                    // .attr("x2", (v_e)=>{
-                    //     return t_parameters.position[v_e[1]][0];
-                    // })
-                    // .attr("y1", (v_e)=>{
-                    //     return t_parameters.position[v_e[0]][1];
-                    // })
-                    // .attr("y2", (v_e)=>{
-                    //     return t_parameters.position[v_e[1]][1];
-                    // })
-                    // .attr("stroke","#000")
-                    // .attr("stroke-width", "3px");
-          t_g.attr('transform', 'translate(' + [-t_center[0] * t_scale, -t_center[1] * t_scale] + ')scale(' + t_scale + ')')
-        },
-        t_renderClsBox = () => {
-          for (let i = 0; i < t_clsInfo.length; i++) {
-            let t_info = t_clsInfo[i],
-              t_hidden = !(i == 0)
-            t_renderClsBox_level(t_info, i, this.d3el, t_hidden)
-          }
+          let ID = cls.clsID.join('_')
+          clsFeatSub.set(ID, featureSubCode)
+          clsDimWgt.set(ID, dimWeights)
         }
-      this.showBackground()
-      t_renderClsBox()
-    },
-
-    updateClusters: function (t_clsInfo) {
-      for (let i = 0; i < t_clsInfo.length; i++) {
-        let t_level = t_clsInfo[i],
-          t_invisibleLevel
-        for (let j = 0; j < t_level.length; j++) {
-          let t_info = t_level[j],
-            t_clsID = t_info.clsID
-          if (t_invisibleLevel == undefined) {
-            t_invisibleLevel = !t_info.visible
-          } else {
-            t_invisibleLevel = t_invisibleLevel && (!t_info.visible)
-          }
-          this.d3el.select('#ClsProjection_' + t_clsID).attr('display', t_info.visible ? 'block' : 'none')
-        }
-        this.d3el.select('#ClsLevelProjection_' + i).attr('display', t_invisibleLevel ? 'none' : 'block')
       }
     },
+
+    initClusters: function (clsInfo) {
+      let clsFeatSub = this.clusterFeatureSubspaces // the feature subspace of each cluster
+      let clsFeatProj = this.clusterFeatureProjections // the projection of the feature subspace
+      let clsDimWgt = this.clusterDimensionWeights // the average dimension weights
+      if (clsFeatProj.size === 0) {
+        this.getFeatureSubspaces(clsFeatSub, clsDimWgt, clsInfo)
+        let defer = $.Deferred()
+        this.collection.getClusterSubspaceProjection(clsFeatSub, clsFeatProj, defer)
+      }
+    }, // end of initClusters
+
+    showCluster: function (clsID) {
+      if (clsID !== undefined && clsID.length !== 0) {
+        let clsFeatSub = this.clusterFeatureSubspaces.get(clsID.join('_'))
+        this.getProjection(clsFeatSub)
+      } else {
+        this.restoreProjection()
+      }
+    }, // end of showCluster
 
     saveProjection: function (v_cords, v_projections, v_interpolate) {
       this.defaultProjection = v_projections
       if (this.defaultReady != null) {
         this.defaultReady.resolve()
       }
+      this.showProjection_v2(v_cords, v_projections, v_interpolate)
     },
 
     showProjection: function (v_g, v_radius, v_proj, v_weights) {
@@ -534,12 +313,12 @@ define([
                 .attr('class', 'ProjectionPoint')
     },
 
-        // showProjection_v2: function(v_cords, v_projections, v_interpolate){
-        //     this.painter.setCanvas(this.d3el);
-        //     this.painter.stopAll();
-        //     this.painter.setData(Config.get("data").data, Config.get("data").dimensions.values());
-        //     this.painter.drawBiplot(v_projections, v_cords, v_interpolate);
-        // },
+    showProjection_v2: function (v_cords, v_projections, v_interpolate) {
+      this.painter.setCanvas(this.d3el)
+      this.painter.stopAll()
+      this.painter.setData(Config.get('data').data, Config.get('data').dimensions.values())
+      this.painter.drawBiplot(v_projections, v_cords, v_interpolate)
+    },
 
         // showProjection_v1: function(){
         //     let t_projection = this.collection.projection,

@@ -81,7 +81,7 @@ require.config({
     // collections
     'SubMap_Collection': 'collections/submap_Collection',
     'SubList_Collection': 'collections/sublist_Collection',
-    'Projection_Collection': 'collections/projection_Collection',
+    'Projection_Collection': 'collections/projection_Collection_v0.1',
     // views
     'Base': 'views/base.view',
     'AppView': 'views/app.view',
@@ -94,7 +94,7 @@ require.config({
     'SubList_CollectionView': 'views/sublist_Collection.view',
     'Projection_LayoutView': 'views/projection_Layout.view',
     /*    'Projection_CollectionView': 'views/projection_Collection.view' */
-    'Projection_CollectionView': 'views/projection_Collection_v0.1.view'
+    'Projection_CollectionView': 'views/projection_Collection_v0.2.view'
   }
 })
 

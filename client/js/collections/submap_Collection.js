@@ -172,7 +172,7 @@ define([
         t_df7 = $.Deferred(),
         t_df8 = $.Deferred()
       let test = false
-            // t_df6 = $.Deferred();
+      // t_df6 = $.Deferred();
       if (t_realTime) {
         this.sampling(t_df1)
         $.when(t_df1).done(n => {
@@ -186,11 +186,11 @@ define([
         })
         $.when(t_df4).done(n => {
           this.getColors(t_df5)
-                    // this.getSubspaceClusters(t_df5);
+          // this.getSubspaceClusters(t_df5);
         })
         $.when(t_df5).done(n => {
           this.getSubHierClusters(t_df6)
-                    // this.getSubspaceClusters(t_df5);
+          // this.getSubspaceClusters(t_df5);
         })
         $.when(t_df6).done(n => {
           this.getSubTree(t_df7)
@@ -218,15 +218,15 @@ define([
         })
         $.when(t_df4).done(n => {
           this.getColors_load(t_df5)
-                    // this.getSubspaceClusters(t_df5);
+          // this.getSubspaceClusters(t_df5);
         })
         $.when(t_df5).done(n => {
           this.getSubHierClusters_load(t_df6)
-                    // this.getSubspaceClusters(t_df5);
+          // this.getSubspaceClusters(t_df5);
         })
         $.when(t_df6).done(n => {
           this.getSubTree_load(t_df7)
-                    // this.getSubTree_load(t_df7);
+          // this.getSubTree_load(t_df7);
         })
         $.when(t_df7).done(n => {
           this.getMapInitProjection_load(t_df8)
@@ -239,19 +239,19 @@ define([
           this.trigger('SubMapCollection__ShowMap')
         })
       }
-            // $.whenWithProgress(t_dfs1)
-            // .done(() => {
-            //     this.trigger("SubMapCollection__ShowMap");
-            // });
-            // $.when(t_df4).done(n => {
-            //     this.trainModel(t_df5);
-            // });
-            // $.when(t_df5).done(n => {
-            //     this.getModel(t_df6);
-            // });
-            // $.when(t_df6).done(n => {
-            //     this.drawModel();
-            // });
+      // $.whenWithProgress(t_dfs1)
+      // .done(() => {
+      //     this.trigger("SubMapCollection__ShowMap");
+      // });
+      // $.when(t_df4).done(n => {
+      //     this.trainModel(t_df5);
+      // });
+      // $.when(t_df5).done(n => {
+      //     this.getModel(t_df6);
+      // });
+      // $.when(t_df6).done(n => {
+      //     this.drawModel();
+      // });
     },
 
     setStage: function (v_state) {
@@ -297,16 +297,16 @@ define([
         console.info('SubMapCollection: Sampling rate: ' + (v_codes.length / t_sum * 100).toFixed(2) + '%')
         v_df.resolve()
       }, true, true)
-            // while(t_count < t_all){
-            //     var t_st = self.binaryRandom([0, t_top], t_dimRange);
-            //     if(!t_indeces.has(t_st)){
-            //         t_indeces.add(t_st);
-            //         self.add(new SubMap_Model({code: t_st, dimensions: self.dimensions, id: t_count, collection: self}));
-            //         t_count ++;
-            //     }
-            // }
-            // self.subIndex = t_indeces;
-            // self.sampleCount = t_count;
+      // while(t_count < t_all){
+      //     var t_st = self.binaryRandom([0, t_top], t_dimRange);
+      //     if(!t_indeces.has(t_st)){
+      //         t_indeces.add(t_st);
+      //         self.add(new SubMap_Model({code: t_st, dimensions: self.dimensions, id: t_count, collection: self}));
+      //         t_count ++;
+      //     }
+      // }
+      // self.subIndex = t_indeces;
+      // self.sampleCount = t_count;
     },
 
     sampling_load: function (v_df) {
@@ -384,23 +384,23 @@ define([
           }
         }, true, true)
       })
-            // self.trigger("SubMapCollection__Panda",{
-            // }, "subDimDist = DimDistance(subCodes)", function(v_dist){
-            //     self.dimDist = v_dist;
-            //     t_df1.resolve();
-            // }, true, true);
+      // self.trigger("SubMapCollection__Panda",{
+      // }, "subDimDist = DimDistance(subCodes)", function(v_dist){
+      //     self.dimDist = v_dist;
+      //     t_df1.resolve();
+      // }, true, true);
     },
 
     getDistances_load: function (v_df) {
       this.setStage('Distances_load')
       let t_df0 = $.Deferred()
-            // this.trigger("SubMapCollection__Panda",{
-            //     fileName: this.dataFiles.get("subKNNDistr"),
-            // }, "subKNNDistr = PMLoad(fileName)", function(){
-            //     if(t_df0){
-            //         t_df0.resolve();
-            //     }
-            // }, true, false);
+      // this.trigger("SubMapCollection__Panda",{
+      //     fileName: this.dataFiles.get("subKNNDistr"),
+      // }, "subKNNDistr = PMLoad(fileName)", function(){
+      //     if(t_df0){
+      //         t_df0.resolve();
+      //     }
+      // }, true, false);
       this.trigger('SubMapCollection__Panda', {
         knnK: Config.get('KNN_K'),
         fileName: this.dataFiles.get('subKNNDistr')
@@ -509,31 +509,31 @@ define([
       }, true, true)
     },
 
-        // getClsParameters: function(v_dist){
-        //         let t_length = v_dist.length,
-        //             t_min_elems = Math.round(t_length / 8);
-        //         // t_min_elems = t_min_elems < 6?t_min_elems:6;
-        //         console.log(t_min_elems);
-        //         if(t_min_elems < 2){
-        //             t_min_elems = 2;
-        //         }
-        //         let t_prs = {
-        //                 eps: null,
-        //                 min_elems: t_min_elems,
-        //             };
-        //         if(t_prs.min_elems < 1){
-        //             t_prs.min_elems = 1;
-        //         }
-        //         let t_sum = new Array();
-        //         for(let i = 0; i < t_length; i++){
-        //             let t_dist = new Array(...v_dist[i]);
-        //             t_dist.sort();
-        //             t_sum.push(t_dist[t_prs.min_elems]);
-        //         }
-        //         t_sum.sort();
-        //         t_prs.eps = eval(t_sum.join("+")) / t_length;
-        //         return t_prs;
-        // },
+    // getClsParameters: function(v_dist){
+    //         let t_length = v_dist.length,
+    //             t_min_elems = Math.round(t_length / 8);
+    //         // t_min_elems = t_min_elems < 6?t_min_elems:6;
+    //         console.log(t_min_elems);
+    //         if(t_min_elems < 2){
+    //             t_min_elems = 2;
+    //         }
+    //         let t_prs = {
+    //                 eps: null,
+    //                 min_elems: t_min_elems,
+    //             };
+    //         if(t_prs.min_elems < 1){
+    //             t_prs.min_elems = 1;
+    //         }
+    //         let t_sum = new Array();
+    //         for(let i = 0; i < t_length; i++){
+    //             let t_dist = new Array(...v_dist[i]);
+    //             t_dist.sort();
+    //             t_sum.push(t_dist[t_prs.min_elems]);
+    //         }
+    //         t_sum.sort();
+    //         t_prs.eps = eval(t_sum.join("+")) / t_length;
+    //         return t_prs;
+    // },
 
     getSubHierClusters: function (v_df, v_isTemp = false, v_length, v_projMat) {
       if (!v_isTemp) {
@@ -678,14 +678,23 @@ define([
     },
 
     getMapInitProjection: function (df) {
-      let dcdDistMatrix = this.subTree.data.dcdDistMatrix
+      // let dcdDistMatrix = this.subTree.data.dcdDistMatrix
       this.trigger('SubMapCollection__Panda', {
         projType: 'MDS',
         projDim: 2,
-        mapInitDistMatrix: dcdDistMatrix,
+        // mapInitDistMatrix: dcdDistMatrix,
         fileName: this.dataFiles.get('mapInitProjection')
-      }, 'PMSave(subProj = Projection(mapInitDistMatrix, projType, projDim), fileName)', projection => {
-        this.subTree.data.initProjection = projection
+        // }, 'PMSave(subProj = Projection(mapInitDistMatrix, projType, projDim), fileName)', projection => {
+      }, 'PMSave(subProj = Projection(subDataDist, projType, projDim), fileName)', projection => {
+        let initProjection = []
+        for (let child of this.subTree.children) {
+          let centerLeafName = child.data.centerLeafName[0]
+          initProjection.push(projection[centerLeafName])
+        }
+        for (let leaf of this.subTree.leaves) {
+          initProjection.push(projection[leaf])
+        }
+        this.subTree.data.initProjection = initProjection
         df.resolve()
       }, true, true)
     },
@@ -694,7 +703,15 @@ define([
       this.trigger('SubMapCollection__Panda', {
         fileName: this.dataFiles.get('mapInitProjection')
       }, 'subProj = PMLoad(fileName)', projection => {
-        this.subTree.data.initProjection = projection
+        let initProjection = []
+        for (let child of this.subTree.children) {
+          let centerLeafName = child.data.centerLeafName[0]
+          initProjection.push(projection[centerLeafName])
+        }
+        for (let leaf of this.subTree.leaves) {
+          initProjection.push(projection[leaf])
+        }
+        this.subTree.data.initProjection = initProjection
         df.resolve()
       }, true, true)
     },
@@ -708,58 +725,58 @@ define([
       }, true, true)
     },
 
-        // getSubspaceClusters: function(v_df){
-        //     let t_distType = Config.get("clusterDistMat"),
-        //         t_clusterParameters,
-        //         t_clusterCommand,
-        //         t_parameters,
-        //         t_eps,
-        //         t_min_elems;
-        //     switch(t_distType){
-        //         case "projection":
-        //             t_parameters = this.getClsParameters(this.projDist);
-        //             t_eps = t_parameters.eps;
-        //             t_min_elems = t_parameters.min_elems;
-        //             t_clusterParameters = {
-        //                 'tempDist': this.projDist,
-        //                 'DC_eps': t_eps,
-        //                 'DC_min_elems': t_min_elems,
-        //             }
-        //             t_clusterCommand = "DBSCAN(tempDist, DC_eps, DC_min_elems)";
-        //         break;
-        //         case "original":
-        //             t_parameters = this.getClsParameters(this.dataDist);
-        //             t_eps = t_parameters.eps;
-        //             t_min_elems = t_parameters.min_elems;
-        //             t_clusterParameters = {
-        //                 'DC_eps': t_eps,
-        //                 'DC_min_elems': t_min_elems,
-        //             };
-        //             t_clusterCommand = "DBSCAN(subDataDist, DC_eps, DC_min_elems)";
-        //         break;
-        //     }
-        //     this.trigger("SubMapCollection__Panda", t_clusterParameters, t_clusterCommand, v_clusters => {
-        //         let t_clusters = {
-        //             clusters: new Array(),
-        //             outliers: new Array(),
-        //         };
-        //         for(let i = 0; i < v_clusters.length; i++){
-        //             if(v_clusters[i] < 0){
-        //                 t_clusters.outliers.push(i);
-        //             }else{
-        //                 let t_index = v_clusters[i],
-        //                     t_cluster = t_clusters.clusters[t_index];
-        //                 if(t_cluster == null){
-        //                     t_cluster = new Array();
-        //                 }
-        //                 t_cluster.push(i);
-        //                 t_clusters.clusters[t_index] = t_cluster;
-        //             }
-        //         }
-        //         this.clusters = t_clusters;
-        //         v_df.resolve();
-        //     }, true, true);
-        // },
+    // getSubspaceClusters: function(v_df){
+    //     let t_distType = Config.get("clusterDistMat"),
+    //         t_clusterParameters,
+    //         t_clusterCommand,
+    //         t_parameters,
+    //         t_eps,
+    //         t_min_elems;
+    //     switch(t_distType){
+    //         case "projection":
+    //             t_parameters = this.getClsParameters(this.projDist);
+    //             t_eps = t_parameters.eps;
+    //             t_min_elems = t_parameters.min_elems;
+    //             t_clusterParameters = {
+    //                 'tempDist': this.projDist,
+    //                 'DC_eps': t_eps,
+    //                 'DC_min_elems': t_min_elems,
+    //             }
+    //             t_clusterCommand = "DBSCAN(tempDist, DC_eps, DC_min_elems)";
+    //         break;
+    //         case "original":
+    //             t_parameters = this.getClsParameters(this.dataDist);
+    //             t_eps = t_parameters.eps;
+    //             t_min_elems = t_parameters.min_elems;
+    //             t_clusterParameters = {
+    //                 'DC_eps': t_eps,
+    //                 'DC_min_elems': t_min_elems,
+    //             };
+    //             t_clusterCommand = "DBSCAN(subDataDist, DC_eps, DC_min_elems)";
+    //         break;
+    //     }
+    //     this.trigger("SubMapCollection__Panda", t_clusterParameters, t_clusterCommand, v_clusters => {
+    //         let t_clusters = {
+    //             clusters: new Array(),
+    //             outliers: new Array(),
+    //         };
+    //         for(let i = 0; i < v_clusters.length; i++){
+    //             if(v_clusters[i] < 0){
+    //                 t_clusters.outliers.push(i);
+    //             }else{
+    //                 let t_index = v_clusters[i],
+    //                     t_cluster = t_clusters.clusters[t_index];
+    //                 if(t_cluster == null){
+    //                     t_cluster = new Array();
+    //                 }
+    //                 t_cluster.push(i);
+    //                 t_clusters.clusters[t_index] = t_cluster;
+    //             }
+    //         }
+    //         this.clusters = t_clusters;
+    //         v_df.resolve();
+    //     }, true, true);
+    // },
 
     getProjection: function (v_df) {
       var self = this,
@@ -785,16 +802,16 @@ define([
         this.colors = v_proj
         t_df1.resolve()
       }, true, true)
-            // t_df1.resolve();
+      // t_df1.resolve();
       $.whenWithProgress(t_dfs)
-                .done(function () {
-                  self.trigger('SubMapCollection__ShowMap')
-                  if (v_df) {
-                    v_df.resolve()
-                  }
-                })
-            //         self.projection = MDS.byDistance(self.dist);
-            //         self.trigger("SubMapCollection__ShowProjection");
+        .done(function () {
+          self.trigger('SubMapCollection__ShowMap')
+          if (v_df) {
+            v_df.resolve()
+          }
+        })
+      //         self.projection = MDS.byDistance(self.dist);
+      //         self.trigger("SubMapCollection__ShowProjection");
     },
 
     getCoverage: function (v_indeces) {
@@ -877,11 +894,11 @@ define([
         t_df2.resolve()
       }, true, true)
       $.whenWithProgress(t_dfs)
-                .done(function () {
-                  if (v_df) {
-                    v_df.resolve()
-                  }
-                })
+        .done(function () {
+          if (v_df) {
+            v_df.resolve()
+          }
+        })
     },
 
     drawModel: function () {
